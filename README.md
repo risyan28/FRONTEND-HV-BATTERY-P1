@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Welcome to React Router!
 
 A modern, production-ready template for building full-stack React applications using React Router.
@@ -85,3 +86,7 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
 ---
 
 Built with ❤️ using React Router.
+=======
+# FRONTEND-HV-BATTERY-P1
+Frontend Runtime (React Router + SSR)
+>>>>>>> 1cb01f3f875b4b8c2edb862e82ac5bac0c269624
