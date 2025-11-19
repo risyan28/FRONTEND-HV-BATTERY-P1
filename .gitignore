@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+#Runtime
+frontend-runtime/
+
 # Build outputs
 build/
 dist/
@@ -47,3 +50,4 @@ Thumbs.db
 
 # Local env
 .env*
+.text*

@@ -15,7 +15,10 @@
     "docker:save": "docker save -o my-fe.tar my-fe:latest",
     "docker:prune": "docker image prune -f --filter dangling=true",
     "deploy:docker": "npm run build && npm run docker:build && npm run docker:prune && npm run docker:save",
-    "bundle:fe": "node build-frontend-bundle.mjs"
+    "bundle:fe": "node build-frontend-bundle.mjs",
+    "git:solo": "git add . && git diff --cached --quiet || git commit -m \"Update project\" && git pull origin main --no-rebase && git push origin main",
+    "git:team": "git add . && git diff --cached --quiet || git commit -m \"Update project\" && git pull origin main --no-rebase && git push origin $(git branch --show-current)",
+    "git:new": "git checkout -b"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
