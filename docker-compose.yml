@@ -1,0 +1,17 @@
+services:
+  frontend:
+    image: my-fe:latest
+    build: .
+    container_name: hv-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://hv-backend:4001/api   # FE connect ke BE lewat service name
+      VITE_WS_URL: ws://hv-backend:4001
+      NODE_ENV: production
+    networks:
+      - hv-network
+
+networks:
+  hv-network:
+    driver: bridge

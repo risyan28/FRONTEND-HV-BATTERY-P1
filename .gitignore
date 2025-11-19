@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+
+# Vite cache
+.vite/
+
+# React Router cache
+.react-router/
+
+# TypeScript
+tsconfig.build.json
+tsconfig.eslint.json
+
+# Environment variables
+.env.local
+.env.development
+.env.production
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.pid.lock
+
+# Coverage
+coverage/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Docker/Podman
+*.tar
+*.tar.gz
+*.zip
+
+# Local env
+.env*
