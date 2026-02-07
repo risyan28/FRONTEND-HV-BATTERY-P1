@@ -13,13 +13,10 @@ import { NavigationHandler } from '@/components/navigation-handler'
 import { MainMenu } from './MainMenu'
 import { SafetyCompliance } from '@/components/manufacture/dashboard/SafetyCompliance'
 
-
 export function DashboardLayout(): React.ReactElement {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [key, setKey] = useState(Date.now())
-
-
 
   // Set loading to false after 1 second
   useEffect(() => {

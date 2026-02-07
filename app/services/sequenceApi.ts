@@ -1,3 +1,5 @@
+// app\services\sequenceApi.ts
+
 import { createApi } from '@/lib/api'
 import type { Sequence, SequenceState, CreateSequence } from '@/types/sequence'
 

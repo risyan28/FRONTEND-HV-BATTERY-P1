@@ -36,7 +36,7 @@ export function Clock({ className }: Props) {
       className={cn(
         'flex flex-col items-center justify-center font-mono font-bold text-blue-700',
         'tracking-wide leading-tight',
-        'text-[3vw] md:text-[2.2vw] xl:text-[2.2vw]',
+        'text-[4vw]',
         'rounded-lg', // <-- border radius 5px
         className
       )}

@@ -13,7 +13,7 @@ export function SummaryBar({ target, plan, actual, effPct }: Props) {
   const items: Array<{ label: string; value: string | number }> = [
     { label: 'TARGET', value: target },
     { label: 'PLAN', value: plan },
-    { label: 'ACTUAL', value: actual },
+    { label: 'ACT', value: actual },
     { label: 'EFF %', value: `${effPct}%` },
   ]
 
@@ -29,10 +29,10 @@ export function SummaryBar({ target, plan, actual, effPct }: Props) {
               idx === 0 ? '' : 'border-l-4',
             ].join(' ')}
           >
-            <div className='font-bold uppercase border-b-2 border-black py-1 text-xl'>
+            <div className='font-bold uppercase border-b-2 border-black py-1 text-5xl'>
               {item.label}
             </div>
-            <div className='font-bold text-5xl leading-none py-3 bg-yellow-300'>
+            <div className='font-bold text-7xl leading-none py-1 bg-yellow-300'>
               {item.value}
             </div>
           </div>

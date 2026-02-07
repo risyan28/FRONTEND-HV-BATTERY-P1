@@ -24,4 +24,8 @@ export default [
     '/dashboard-user/manufacture/andon-screen',
     'routes/dashboard-user/manufacture/andon-screen.tsx'
   ),
+  route(
+    '/dashboard-user/manufacture/traceability-data',
+    'routes/dashboard-user/manufacture/traceability-data.tsx'
+  ),
 ] satisfies RouteConfig

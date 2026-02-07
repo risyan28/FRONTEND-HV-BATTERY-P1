@@ -61,7 +61,7 @@ export function ProductionPlanPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className='flex-[8] rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
+            className='flex-8 rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
           >
             <SequenceTable
               sequences={

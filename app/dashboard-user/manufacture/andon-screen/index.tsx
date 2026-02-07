@@ -64,14 +64,14 @@ export function AndonScreen() {
               transition={{ duration: 0.5 }}
             >
               {/* LEFT - TITLE */}
-              <div className='flex-[8] flex items-center justify-center border-4 border-black bg-white rounded-md p-3'>
-                <h1 className='text-[7.5vw] md:text-[8vw] xl:text-[4vw] font-extrabold uppercase text-center tracking-tight'>
+              <div className='flex-8 flex items-center justify-center border-4 border-black bg-white rounded-md p-3'>
+                <h1 className='text-[7vw] md:text-[9vw] xl:text-[4vw] font-extrabold uppercase text-center tracking-tight'>
                   HEV BATTERY LINE
                 </h1>
               </div>
 
               {/* RIGHT - CLOCK */}
-              <div className='flex-[2] flex flex-col items-center justify-center border-4 border-black bg-white rounded-md p-3'>
+              <div className='flex-2 flex flex-col items-center justify-center border-4 border-black bg-white rounded-md p-3'>
                 <Clock className='w-full text-right px-2' />
               </div>
             </motion.div>
@@ -86,7 +86,7 @@ export function AndonScreen() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               {/* LEFT - Factory Layout */}
-              <div className='flex-[5]  rounded-md'>
+              <div className='flex-4  rounded-md -mt-12'>
                 <FactoryLayout
                   act_assy={dataSummary.ActAssy}
                   act_ckd={dataSummary.ActCkd}
@@ -96,14 +96,14 @@ export function AndonScreen() {
               </div>
 
               {/* RIGHT - Downtime Panel + InfoGrid */}
-              <div className='flex-[5] rounded-md'>
+              <div className='flex-6 rounded-md'>
                 <DowntimePanel downtimeData={downtimeData} />
-                <InfoGrid className='mt-5' activeCalls={activeCalls} />
+                <InfoGrid className='mt-2' activeCalls={activeCalls} />
               </div>
             </motion.div>
           </div>
 
-          <footer className='mt-1 p-2'>
+          <footer className='p-2'>
             <SummaryBar
               target={dataSummary.Target}
               plan={dataSummary.Plan}

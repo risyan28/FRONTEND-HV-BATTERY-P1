@@ -136,9 +136,11 @@ export const FactoryLayout: FC<Props> = ({
   let currentYLeft = 105
   const leftLabels = [
     undefined,
+    undefined,
+    undefined,
     'MANUAL ASSY 3',
     undefined,
-    'CHARGING',
+    'INSPECT',
     undefined,
     'FINAL JUDGE',
     undefined,
@@ -164,13 +166,15 @@ export const FactoryLayout: FC<Props> = ({
   const rightLabels = [
     undefined,
     undefined,
+    undefined,
+    undefined,
     'MANUAL ASSY 2',
     undefined,
     'MANUAL ASSY 1',
     undefined,
     undefined,
     undefined,
-    'STACK LOADING',
+    'UN LOADING',
   ]
 
   for (let i = 0; i < rightLabels.length; i++) {
@@ -199,15 +203,15 @@ export const FactoryLayout: FC<Props> = ({
         {/* Transfer lines */}
         <div
           className='absolute bg-green-800'
-          style={{ left: 87, top: 57, width: 15, height: 48 }}
+          style={{ left: 40, top: 57, width: 25, height: 48 }}
         />
         <div
           className='absolute bg-green-800'
-          style={{ left: 87, top: 45, width: 214, height: 15 }}
+          style={{ left: 40, top: 45, width: 230, height: 25 }}
         />
         <div
           className='absolute bg-green-800'
-          style={{ left: 115, top: 732, width: 185, height: 15 }}
+          style={{ left: 90, top: 850, width: 180, height: 25 }}
         />
 
         {/* KOLOM KIRI */}
@@ -216,10 +220,10 @@ export const FactoryLayout: FC<Props> = ({
           return (
             <div key={key}>
               <AbsBox
-                x={75}
+                x={10}
                 y={box.y}
                 label={box.label}
-                labelFontSize={FontSize}
+                
                 bgColor={box.bgColor}
                 isBlinking={box.isBlinking}
               />
@@ -232,10 +236,10 @@ export const FactoryLayout: FC<Props> = ({
                       : '/images/maintenance.png'
                   }
                   alt={box.callType}
-                  className='absolute w-8 h-8 pointer-events-none z-50'
+                  className='absolute w-12 h-12 pointer-events-none z-50'
                   style={{
-                    left: 75 + DEFAULT_BOX_WIDTH + 6,
-                    top: box.y + DEFAULT_BOX_HEIGHT / 2 - 16,
+                    left: 15 + DEFAULT_BOX_WIDTH + 6,
+                    top: box.y + DEFAULT_BOX_HEIGHT / 2 - 22,
                   }}
                 />
               )}
@@ -249,10 +253,10 @@ export const FactoryLayout: FC<Props> = ({
           return (
             <div key={key}>
               <AbsBox
-                x={300}
+                x={270}
                 y={box.y}
                 label={box.label}
-                labelFontSize={FontSize}
+                
                 bgColor={box.bgColor}
                 isBlinking={box.isBlinking}
               />
@@ -265,10 +269,10 @@ export const FactoryLayout: FC<Props> = ({
                       : '/images/maintenance.png'
                   }
                   alt={box.callType}
-                  className='absolute w-8 h-8 pointer-events-none z-50'
+                  className='absolute w-12 h-12 pointer-events-none z-50'
                   style={{
                     left: 300 - DEFAULT_BOX_WIDTH, // kiri luar kotak kanan
-                    top: box.y + DEFAULT_BOX_HEIGHT / 2 - 16,
+                    top: box.y + DEFAULT_BOX_HEIGHT / 2 - 22,
                   }}
                 />
               )}
@@ -278,11 +282,11 @@ export const FactoryLayout: FC<Props> = ({
 
         {/* Li / Ni PACK */}
         <AbsBox
-          x={140}
-          y={780}
-          w={60}
-          h={100}
-          className='flex items-center justify-center font-bold text-xl'
+          x={110}
+          y={900}
+          w={70}
+          h={85}
+          className='flex items-center justify-center font-bold text-2xl px-1 py-1'
         >
           <div className='flex flex-col items-center '>
             <span>ASSY</span>
@@ -290,11 +294,11 @@ export const FactoryLayout: FC<Props> = ({
           </div>
         </AbsBox>
         <AbsBox
-          x={220}
-          y={780}
-          w={60}
-          h={100}
-          className='flex items-center justify-center font-bold text-xl'
+          x={190}
+          y={900}
+          w={70}
+          h={85}
+          className='flex items-center justify-center font-bold text-2xl px-1 py-1'
         >
           <div className='flex flex-col items-center '>
             <span>CKD</span>

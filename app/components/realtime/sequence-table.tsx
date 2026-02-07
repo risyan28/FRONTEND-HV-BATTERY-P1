@@ -37,10 +37,10 @@ export function SequenceTable({ data }: SequenceTableProps) {
   }, []) // kosong → cuma sekali
 
   return (
-    <div className='flex-[8] rounded-lg border border-border overflow-hidden shadow-sm h-[calc(100vh-300px)]'>
+    <div className='flex-8 rounded-lg border border-border overflow-hidden shadow-sm h-[calc(100vh-300px)]'>
       <div className='h-full flex flex-col overflow-hidden'>
         {/* Header */}
-        <div className='flex text-lg font-bold bg-gray-400 h-12'>
+        <div className='flex text-lg font-bold bg-gray-400 h-16'>
           {headers.map((header, index) => (
             <div
               key={header}
@@ -96,7 +96,7 @@ export function SequenceTable({ data }: SequenceTableProps) {
                       }}
                       className='min-w-0 p-2 text-center font-bold 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 text-xl'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 text-lg'
                     >
                       {row.FBARCODE?.slice(-7)}
                     </div>
@@ -110,7 +110,7 @@ export function SequenceTable({ data }: SequenceTableProps) {
                       }}
                       className='min-w-0 p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-xl'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-lg'
                     >
                       <span className='hidden sm:inline'>
                         {row.FMODEL_BATTERY}
@@ -129,7 +129,7 @@ export function SequenceTable({ data }: SequenceTableProps) {
                       }}
                       className='min-w-0 p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-xl'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-lg'
                     >
                       {row.FSEQ_K0}
                     </div>
@@ -143,7 +143,7 @@ export function SequenceTable({ data }: SequenceTableProps) {
                       }}
                       className='min-w-0 p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-xl'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-lg'
                     >
                       {row.FBODY_NO_K0}
                     </div>

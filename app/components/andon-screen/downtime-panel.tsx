@@ -43,18 +43,18 @@ export function DowntimePanel({ downtimeData }: DowntimePanelProps) {
   const minutes = cols.map((station) => uiMap.get(station)?.minutes || 0)
 
   return (
-    <section className='border-4 border-[var(--color-line-black)] bg-white rounded-md mt-5'>
+    <section className='border-4 border-(--color-line-black) bg-white rounded-md mt-1'>
       {/* Header */}
-      <h2 className='text-center font-bold uppercase border-b-3 border-[var(--color-line-black)] text-3xl bg-gray-300 py-2'>
+      <h2 className='text-center font-bold uppercase border-b-3 border-(--color-line-black) text-4xl bg-gray-300'>
         DOWNTIME
       </h2>
 
       {/* Column Headers - ROTATED TEXT */}
-      <div className='grid grid-cols-6 gap-1 p-1 border-b-3 border-[var(--color-line-black)]'>
+      <div className='grid grid-cols-6 gap-1 p-1 border-b-3 border-(--color-line-black)'>
         {cols.map((c, i) => (
           <div
             key={i}
-            className='border-3 border-[var(--color-line-black)] flex items-center justify-center min-h-35 p-1 relative'
+            className='border-3 border-(--color-line-black) flex items-center justify-center min-h-35 p-1 relative'
           >
             <span className='absolute inset-0 flex items-center justify-center rotate-90 origin-center text-xl font-bold uppercase whitespace-nowrap pointer-events-none'>
               {c}
@@ -64,14 +64,14 @@ export function DowntimePanel({ downtimeData }: DowntimePanelProps) {
       </div>
 
       {/* TIMES Section */}
-      <div className='text-center font-bold uppercase border-b-3 border-[var(--color-line-black)] text-md bg-gray-300 py-1'>
-        TOTAL DOWNTIME [TIMES]
+      <div className='text-center font-bold uppercase border-b-3 border-(--color-line-black) text-4xl bg-gray-300 px-1 py-1'>
+        [TIMES]
       </div>
-      <div className='grid grid-cols-6 gap-1 px-1 py-2 border-b-3 border-[var(--color-line-black)]'>
+      <div className='grid grid-cols-6 gap-1 px-1 py-1 border-b-3 border-(--color-line-black)'>
         {times.map((v, i) => (
           <div
             key={`times-${i}`}
-            className='border-3 border-[var(--color-line-black)] text-center font-bold text-5xl p-2 flex items-center justify-center min-h-16'
+            className='border-3 border-(--color-line-black) text-center font-bold text-5xl flex items-center justify-center h-14'
           >
             {v}
           </div>
@@ -79,14 +79,14 @@ export function DowntimePanel({ downtimeData }: DowntimePanelProps) {
       </div>
 
       {/* MINUTES Section */}
-      <div className='text-center font-bold uppercase border-b-3 border-[var(--color-line-black)] text-md bg-gray-300 py-1'>
-        TOTAL DOWNTIME [MINUTES]
+      <div className='text-center font-bold uppercase border-b-3 border-(--color-line-black) text-4xl bg-gray-300 px-1 py-1'>
+        [MINUTES]
       </div>
-      <div className='grid grid-cols-6 gap-1 px-1 py-2'>
+      <div className='grid grid-cols-6 gap-1 px-1 py-1'>
         {minutes.map((v, i) => (
           <div
             key={`minutes-${i}`}
-            className='border-3 border-[var(--color-line-black)] text-center font-bold text-5xl p-2 flex items-center justify-center min-h-16'
+            className='border-3 border-(--color-line-black) text-center font-bold text-[30px] flex items-center justify-center h-14'
           >
             {v}
           </div>

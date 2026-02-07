@@ -10,6 +10,7 @@ import {
 import type { Route } from './+types/root'
 import './app.css'
 import { NotFoundPage } from './not-found'
+import { Toaster } from '@/components/ui/sonner'
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -32,11 +33,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <Meta />
         <Links />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Suppress error dari browser extension
+              window.addEventListener('unhandledrejection', (event) => {
+                if (event.reason?.message?.includes('message channel closed')) {
+                  event.preventDefault();
+                  return false;
+                }
+              });
+              
+              // Suppress error dari extension message listener
+              const originalError = console.error;
+              console.error = function(...args) {
+                if (args[0]?.includes?.('message channel closed')) {
+                  return;
+                }
+                originalError.apply(console, args);
+              };
+            `,
+          }}
+        />
       </head>
       <body className='font-mono'>
         {children}
         <ScrollRestoration />
         <Scripts />
+        <Toaster />
       </body>
     </html>
   )

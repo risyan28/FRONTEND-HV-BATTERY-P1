@@ -52,7 +52,7 @@ export function ProductionSequencePage(): React.ReactElement {
       {isLoading && <LoadingScreen />}
       {!isLoading && (
         <>
-          <div className='flex flex-1 flex-col'>
+           <div className='flex flex-1 flex-col w-full'>
             {/* Header Component */}
             <AppHeader title='SEQUENCE HV BATTERY' />
             <div className='flex-1 flex flex-col p-2 gap-2 '>

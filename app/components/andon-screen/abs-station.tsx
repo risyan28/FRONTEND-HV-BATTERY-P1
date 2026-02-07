@@ -1,9 +1,9 @@
 // abs-station.tsx
 import { type ReactNode } from 'react'
 
-export const DEFAULT_BOX_WIDTH = 40
-export const DEFAULT_BOX_HEIGHT = 80
-export const FontSize = 17
+export const DEFAULT_BOX_WIDTH = 85
+export const DEFAULT_BOX_HEIGHT = 75
+export const FontSize = 25
 type BoxProps = {
   x: number
   y: number
@@ -17,6 +17,8 @@ type BoxProps = {
   isBlinking?: boolean // ✅ terima blink
 }
 
+// abs-station.tsx
+
 export function AbsBox({
   x,
   y,
@@ -25,15 +27,22 @@ export function AbsBox({
   className = '',
   children,
   label,
-  labelFontSize = FontSize,
   bgColor = '#00ff04',
   isBlinking = false,
 }: BoxProps) {
-  // Cek apakah bgColor itu hex/rgb (bukan Tailwind class)
   const isCustomColor = bgColor.startsWith('#') || bgColor.startsWith('rgb')
-
-  // Kelas blink (bisa dipakai di CSS global)
   const blinkClass = isBlinking ? 'animate-blink' : ''
+
+  // Hitung skala berdasarkan panjang teks
+  const getScale = (text: string) => {
+    const len = text.length
+    if (len <= 8) return 1.1
+    if (len <= 12) return 1.2
+    if (len <= 16) return 1.3
+    return 0.7
+  }
+
+  const scale = label ? getScale(label) : 1
 
   return (
     <div
@@ -50,16 +59,27 @@ export function AbsBox({
       {children}
       {label && (
         <div
-          className='absolute inset-0 flex items-center justify-center font-bold uppercase pointer-events-none text-black'
+          className='absolute inset-0 flex items-center justify-center pointer-events-none'
           style={{
-            transform: 'rotate(90deg)',
-            transformOrigin: 'center',
-            fontSize: labelFontSize,
+            fontSize: '16px',
             lineHeight: 1,
-            padding: '2px',
+            textAlign: 'center',
+            padding: '4px',
+            overflow: 'hidden',
           }}
         >
-          {label}
+          <span
+            className='inline-block font-bold uppercase text-black'
+            style={{
+              maxWidth: `${w - 8}px`,
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              transformOrigin: 'center',
+              transform: `scale(${scale})`,
+            }}
+          >
+            {label}
+          </span>
         </div>
       )}
     </div>

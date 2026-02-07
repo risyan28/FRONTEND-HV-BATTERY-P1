@@ -24,7 +24,7 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
   }
 
   const headers = [
-    'NO SEQUENCE',
+    'NO SEQ',
     'TYPE BATTERY',
     'KO SEQ',
     'NO BODY',
@@ -38,10 +38,10 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
   const columnWidths = ['10%', '10%', '10%', '10%', '25%', '25%', '10%']
 
   return (
-    <div className='h-full flex flex-col'>
+    <div className='h-[210px] flex flex-col'>
       {/* Arrow Indicator */}
       <motion.div
-        className='flex justify-center mb-3'
+        className='flex justify-center'
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
@@ -49,7 +49,7 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
       </motion.div>
 
       <motion.div
-        className='flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg overflow-hidden shadow-lg border border-border flex flex-col'
+        className='flex-1 bg-linear-to-r from-yellow-400 to-yellow-500 rounded-lg overflow-hidden shadow-lg border border-border flex flex-col'
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -64,7 +64,7 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
                 flexGrow: 0,
                 flexShrink: 0,
               }}
-              className='p-4 text-center border-r border-yellow-600 last:border-r-0'
+              className='p-2 text-center border-r border-yellow-600 last:border-r-0'
             >
               <span className='hidden sm:inline'>{header}</span>
               <span className='sm:hidden'>{mobileHeaders[index]}</span>
@@ -86,37 +86,37 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
         >
           <div
             style={{ flexBasis: columnWidths[0], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-3xl border-r border-yellow-500 last:border-r-0'
+            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
           >
             {data.FBARCODE?.slice(-7)}
           </div>
           <div
             style={{ flexBasis: columnWidths[1], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-3xl border-r border-yellow-500 last:border-r-0'
+            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
           >
             <span className='hidden sm:inline'>{data.FMODEL_BATTERY}</span>
           </div>
           <div
             style={{ flexBasis: columnWidths[2], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-3xl border-r border-yellow-500 last:border-r-0'
+            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
           >
             {data.FSEQ_K0}
           </div>
           <div
             style={{ flexBasis: columnWidths[3], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-3xl border-r border-yellow-500 last:border-r-0'
+            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
           >
             {data.FBODY_NO_K0}
           </div>
           <div
             style={{ flexBasis: columnWidths[4], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-mono text-3xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
+            className='p-5 text-center flex items-center justify-center font-mono text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
             <span className='hidden lg:inline'>{data.FBARCODE}</span>
           </div>
           <div
             style={{ flexBasis: columnWidths[5], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-mono text-3xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
+            className='p-5 text-center flex items-center justify-center font-mono text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
             <span className='hidden md:inline'>{data.FTIME_PRINTED}</span>
           </div>

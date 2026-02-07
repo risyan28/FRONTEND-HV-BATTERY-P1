@@ -1,12 +1,12 @@
-// routes atau page utama: misal app/routes/history-print.tsx
+// app/dashboard-user/manufacture/traceability-data/index.tsx
 'use client'
 
 import { motion } from 'framer-motion'
 import { PageHeader } from '@/components/production/page-header'
-import { usePrintHistory } from '@/hooks/use-print-history'
-import { HistoryPrintLabel } from './history-print'
+import { useTraceability } from '@/hooks/use-traceability'
+import { TraceabilityDataTable } from './traceability-data-table'
 
-export function HistoryPrint() {
+export  function TraceabilityData() {
   const {
     data,
     filteredData,
@@ -15,21 +15,21 @@ export function HistoryPrint() {
     dateRange,
     setDateRange,
     searchByDate,
-    handleRePrint,
-  } = usePrintHistory()
+  } = useTraceability()
 
   return (
-    <div className='max-w-8xl mx-auto w-full px-2 py-4 sm:px-4 sm:py-6 lg:px-4'>
-      <PageHeader isLoading={loading || isSearching} title='History Printing' />
+    <div className='w-full h-full px-2 py-4 sm:px-4 sm:py-6 lg:px-4 flex flex-col'>
+      <PageHeader isLoading={loading || isSearching} title='Traceability Data' />
 
-      <div className='flex-1 flex gap-2 px-2 sm:px-4 lg:px-0 pb-4 overflow-hidden'>
+      {/* Kontainer utama tabel — jangan beri overflow-x di sini! */}
+      <div className='flex-1 px-2 sm:px-4 lg:px-0 pb-4'>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className='flex-1 rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
+          className='h-full rounded-md border border-gray-100 bg-white/80 shadow-sm flex flex-col'
         >
-          <HistoryPrintLabel
+          <TraceabilityDataTable
             data={data}
             filteredData={filteredData}
             loading={loading}
@@ -37,7 +37,6 @@ export function HistoryPrint() {
             dateRange={dateRange}
             setDateRange={setDateRange}
             searchByDate={searchByDate}
-            handleRePrint={handleRePrint}
           />
         </motion.div>
       </div>

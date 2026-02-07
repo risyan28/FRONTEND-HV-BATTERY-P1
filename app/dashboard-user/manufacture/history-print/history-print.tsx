@@ -1,227 +1,168 @@
+// components/production/history-print.tsx
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Download, Printer, Eye } from 'lucide-react'
+import { useMemo } from 'react'
 import { DataTable } from '@/components/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
+import { Calendar, Search, Printer } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import type { PrintHistory } from '@/types/print-history'
 
-// Sample data type - replace with your actual data structure
-interface PrintHistory {
-  id: string
-  fileName: string
-  printDate: string
-  status: 'completed' | 'failed' | 'pending'
-  pages: number
-  size: string
-  user: string
-  printer: string
+interface HistoryPrintLabelProps {
+  data: PrintHistory[]
+  filteredData: PrintHistory[]
+  loading: boolean
+  isSearching: boolean
+  dateRange: { from: string; to: string }
+  setDateRange: (range: { from: string; to: string }) => void
+  searchByDate: () => Promise<void>
+  handleRePrint: (item: PrintHistory) => void
 }
 
-// Sample data - replace with your actual data fetching
-const sampleData: PrintHistory[] = [
-  {
-    id: '1',
-    fileName: 'Document_Report_2024.pdf',
-    printDate: '2024-01-15 14:30:25',
-    status: 'completed',
-    pages: 25,
-    size: '2.4 MB',
-    user: 'John Doe',
-    printer: 'HP LaserJet Pro',
-  },
-  {
-    id: '2',
-    fileName: 'Invoice_12345.pdf',
-    printDate: '2024-01-15 13:45:12',
-    status: 'failed',
-    pages: 3,
-    size: '1.2 MB',
-    user: 'Jane Smith',
-    printer: 'Canon PIXMA',
-  },
-  {
-    id: '3',
-    fileName: 'Presentation_Q1.pptx',
-    printDate: '2024-01-15 12:20:08',
-    status: 'completed',
-    pages: 45,
-    size: '15.7 MB',
-    user: 'Mike Johnson',
-    printer: 'Epson WorkForce',
-  },
-  {
-    id: '4',
-    fileName: 'Budget_Analysis.xlsx',
-    printDate: '2024-01-15 11:15:33',
-    status: 'pending',
-    pages: 8,
-    size: '5.1 MB',
-    user: 'Sarah Wilson',
-    printer: 'HP LaserJet Pro',
-  },
-  {
-    id: '5',
-    fileName: 'Contract_Template.docx',
-    printDate: '2024-01-15 10:30:45',
-    status: 'completed',
-    pages: 12,
-    size: '890 KB',
-    user: 'David Brown',
-    printer: 'Canon PIXMA',
-  },
-]
-
-export function HistoryPrintLabel() {
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<PrintHistory[]>([])
-
-  // Define table columns with sorting and customization
+export function HistoryPrintLabel({
+  data,
+  filteredData,
+  loading,
+  isSearching,
+  dateRange,
+  setDateRange,
+  searchByDate,
+  handleRePrint,
+}: HistoryPrintLabelProps) {
   const columns: ColumnDef<PrintHistory>[] = useMemo(
     () => [
       {
-        accessorKey: 'fileName',
-        header: 'File Name',
-        cell: ({ row }) => (
-          <div className='flex items-center space-x-2'>
-            <div className='min-w-0 flex-1'>
-              <p className='font-medium text-foreground truncate'>
-                {row.getValue('fileName')}
-              </p>
-              <p className='text-sm text-muted-foreground'>
-                {row.original.size}
-              </p>
-            </div>
-          </div>
-        ),
+        id: 'no',
+        header: 'NO',
+        cell: ({ row }) => <span>{row.index + 1}</span>,
       },
       {
-        accessorKey: 'printDate',
-        header: 'Print Date',
-        cell: ({ row }) => (
-          <div className='text-sm'>
-            <div className='font-medium'>
-              {new Date(row.getValue('printDate')).toLocaleDateString()}
-            </div>
-            <div className='text-muted-foreground'>
-              {new Date(row.getValue('printDate')).toLocaleTimeString()}
-            </div>
-          </div>
-        ),
+        accessorKey: 'batteryPackId',
+        header: 'BATTERY PACK ID',
       },
       {
-        accessorKey: 'status',
-        header: 'Status',
+        accessorKey: 'productionDate',
+        header: 'PRODUCTION DATE',
+        cell: ({ row }) =>
+          new Date(row.getValue('productionDate')).toLocaleDateString('id-ID'),
+      },
+      {
+        accessorKey: 'shift',
+        header: 'SHIFT',
+      },
+      {
+        accessorKey: 'timePrint',
+        header: 'TIME PRINT',
         cell: ({ row }) => {
-          const status = row.getValue('status') as string
-          return (
-            <Badge
-              variant={
-                status === 'completed'
-                  ? 'default'
-                  : status === 'failed'
-                    ? 'destructive'
-                    : 'secondary'
-              }
-              className='capitalize'
-            >
-              {status}
-            </Badge>
-          )
+          const fullStr = row.getValue('timePrint') as string
+          const timePart = fullStr.split(' ')[1]?.split('.')[0] || fullStr
+          return timePart
         },
       },
       {
-        accessorKey: 'pages',
-        header: 'Pages',
-        cell: ({ row }) => (
-          <span className='font-medium'>{row.getValue('pages')} pages</span>
-        ),
-      },
-      {
-        accessorKey: 'user',
-        header: 'User',
-        cell: ({ row }) => (
-          <span className='font-medium'>{row.getValue('user')}</span>
-        ),
-      },
-      {
-        accessorKey: 'printer',
-        header: 'Printer',
-        cell: ({ row }) => (
-          <span className='text-muted-foreground'>
-            {row.getValue('printer')}
-          </span>
-        ),
-      },
-      {
         id: 'actions',
-        header: 'Actions',
+        header: 'ACTION',
         cell: ({ row }) => (
-          <div className='flex items-center space-x-2'>
-            <Button size='sm' variant='ghost' className='h-8 w-8 p-0'>
-              <Eye className='h-4 w-4' />
-            </Button>
-            <Button size='sm' variant='ghost' className='h-8 w-8 p-0'>
-              <Download className='h-4 w-4' />
-            </Button>
-            <Button
-              size='sm'
-              variant='ghost'
-              className='h-8 w-8 p-0'
-              disabled={row.original.status !== 'completed'}
-            >
-              <Printer className='h-4 w-4' />
-            </Button>
-          </div>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => handleRePrint(row.original)}
+            className='flex items-center gap-1'
+          >
+            <Printer className='h-4 w-4' />
+            Re-Print
+          </Button>
         ),
       },
     ],
-    []
+    [handleRePrint]
   )
 
-  // load data sederhana dari sampleData
-  const loadData = async () => {
-    setLoading(true)
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      setData(sampleData)
-    } finally {
-      setLoading(false)
-    }
+  if (loading && !isSearching) {
+    return (
+      <div className='flex-1 px-4 sm:px-6 lg:px-8'>
+        <div className='h-full rounded-xl bg-gray-200 animate-pulse' />
+      </div>
+    )
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
   return (
-    <>
-      {/* Main Content Area */}
-      {loading ? (
-        <div className='flex-1 px-4 sm:px-6 lg:px-8'>
-          <div className='h-full rounded-xl bg-gray-200 animate-pulse' />
-        </div>
-      ) : (
-        <div className='flex-1 flex gap-2 px-2 sm:px-4 lg:px-0 pb-4 overflow-hidden'>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className='flex-[8] rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
-          >
-            <DataTable
-              columns={columns}
-              data={data}
-              searchable={true}
-              searchPlaceholder='Search files, users, or printers...'
-              pageSizeOptions={[5, 10, 20, 50]}
-              initialPageSize={10}
+    <div className='flex-1 flex flex-col gap-2 px-2 sm:px-4 lg:px-0 pb-4 overflow-hidden'>
+      {/* Date Filter */}
+      <div className='mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-end p-2'>
+        <div className='flex flex-col'>
+          <label className='text-sm font-medium mb-1'>From Date</label>
+          <div className='relative'>
+            <input
+              type='date'
+              value={dateRange.from}
+              onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
+              className='border rounded px-2 py-1 pl-8 pr-2 text-sm w-full'
             />
-          </motion.div>
+            <Calendar className='absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none' />
+          </div>
         </div>
-      )}
-    </>
+
+        <div className='flex flex-col'>
+          <label className='text-sm font-medium mb-1'>To Date</label>
+          <div className='relative'>
+            <input
+              type='date'
+              value={dateRange.to}
+              onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
+              className='border rounded px-2 py-1 pl-8 pr-2 text-sm w-full'
+            />
+            <Calendar className='absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none' />
+          </div>
+        </div>
+
+        <Button
+          size='sm'
+          onClick={searchByDate}
+          disabled={isSearching}
+          className='h-8 mt-1 sm:mt-0'
+        >
+          {isSearching ? (
+            <span className='flex items-center'>
+              <div className='h-4 w-4 border-t-2 border-r-2 border-blue-500 rounded-full animate-spin mr-1' />
+              Searching...
+            </span>
+          ) : (
+            <>
+              <Search className='mr-1 h-4 w-4' />
+              Search
+            </>
+          )}
+        </Button>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className='flex-1 rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
+      >
+        {isSearching ? (
+          <div className='flex flex-col gap-2'>
+            <div className='h-6 bg-gray-200 rounded animate-pulse w-1/4' />
+            <div className='space-y-2'>
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className='h-10 bg-gray-100 rounded animate-pulse' />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            searchable={true}
+            searchPlaceholder='Search by Battery Pack ID, Shift...'
+            pageSizeOptions={[5, 10, 20, 50]}
+            initialPageSize={10}
+          />
+        )}
+      </motion.div>
+    </div>
   )
 }
