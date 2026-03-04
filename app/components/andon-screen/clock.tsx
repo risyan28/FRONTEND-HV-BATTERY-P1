@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
-type Props = { className?: string }
+type Props = { className?: string; fontSize?: string }
 
-export function Clock({ className }: Props) {
+export function Clock({ className, fontSize = 'text-2xl' }: Props) {
   const [now, setNow] = useState(new Date())
 
   useEffect(() => {
@@ -36,16 +36,16 @@ export function Clock({ className }: Props) {
       className={cn(
         'flex flex-col items-center justify-center font-mono font-bold text-blue-700',
         'tracking-wide leading-tight',
-        'text-[4vw]',
-        'rounded-lg', // <-- border radius 5px
-        className
+        fontSize,
+        'rounded-lg',
+        className,
       )}
     >
       {/* Waktu */}
-      <div className='text-[1em] mb-[0.2em] text-center'>{time}</div>
+      <div className='text-center'>{time}</div>
 
       {/* Tanggal */}
-      <div className='text-[0.8em] text-center whitespace-nowrap'>{date}</div>
+      <div className='text-center whitespace-nowrap'>{date}</div>
     </div>
   )
 }

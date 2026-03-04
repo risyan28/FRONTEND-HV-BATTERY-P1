@@ -1,0 +1,13 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1920" height="1080" fill="#f9fafb"/>
+  <rect x="0" y="0" width="1920" height="80" fill="#1e3a8a"/>
+  <text x="100" y="50" font-family="Arial" font-size="28" fill="#ffffff" font-weight="bold">HV Battery P1 - TMMIN</text>
+  <rect x="50" y="120" width="400" height="900" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <rect x="500" y="120" width="1370" height="400" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <rect x="500" y="560" width="670" height="460" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <rect x="1200" y="560" width="670" height="460" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <text x="960" y="600" font-family="Arial" font-size="24" fill="#1e3a8a" text-anchor="middle" font-weight="bold">Production Dashboard</text>
+  <rect x="540" y="180" width="300" height="150" rx="8" fill="#dbeafe"/>
+  <rect x="870" y="180" width="300" height="150" rx="8" fill="#dbeafe"/>
+  <rect x="1200" y="180" width="300" height="150" rx="8" fill="#dbeafe"/>
+</svg>

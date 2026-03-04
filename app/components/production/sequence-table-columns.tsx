@@ -19,34 +19,34 @@ export function SequenceTableHead() {
   return (
     <thead className='sticky top-0 z-10 bg-slate-100 dark:bg-slate-800'>
       <tr className='border-b border-slate-200 dark:border-slate-700'>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           NO SEQ
         </th>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           TYPE BATTERY
         </th>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           SEQ K0
         </th>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           BODY NO
         </th>
-        <th className='px-2 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-center text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           BARCODE
         </th>
-        <th className='px-2 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-center text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           DATA FROM
         </th>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           TIME RECEIVED ALC
         </th>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           TIME PRINT LABEL
         </th>
-        <th className='px-2 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-left text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           STATUS
         </th>
-        <th className='px-2 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400'>
+        <th className='px-1 md:px-2 py-2 md:py-3 text-center text-[9px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>
           ACTIONS
         </th>
       </tr>

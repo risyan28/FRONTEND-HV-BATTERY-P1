@@ -8,30 +8,31 @@ export function SequenceTableHeader({
   addManualSeq,
 }: SequenceTableHeaderProps) {
   return (
-    <div className='mb-4 flex items-center justify-between'>
-      {/* Kiri */}
-      <div className='flex items-center gap-4'>
+    <div className='mb-3 md:mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3'>
+      {/* Kiri - Legend */}
+      <div className='flex items-center gap-2 md:gap-4 flex-wrap'>
         <div className='flex items-center'>
-          <div className='mr-2 h-4 w-4 bg-yellow-400'></div>
-          <span className='text-sm'>Current</span>
+          <div className='mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 bg-yellow-400'></div>
+          <span className='text-xs md:text-sm'>Current</span>
         </div>
         <div className='flex items-center'>
-          <div className='mr-2 h-4 w-4 bg-green-500'></div>
-          <span className='text-sm'>History</span>
+          <div className='mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 bg-green-500'></div>
+          <span className='text-xs md:text-sm'>History</span>
         </div>
         <div className='flex items-center'>
-          <div className='mr-2 h-4 w-4 bg-slate-300'></div>
-          <span className='text-sm'>Next Sequence</span>
+          <div className='mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 bg-slate-300'></div>
+          <span className='text-xs md:text-sm'>Next Sequence</span>
         </div>
       </div>
 
-      {/* Kanan */}
+      {/* Kanan - Add Button */}
       <button
         onClick={addManualSeq}
-        className='flex items-center gap-2 rounded-lg bg-black px-3 py-1 text-sm text-white h-10 cursor-pointer'
+        className='flex items-center gap-1.5 md:gap-2 rounded-lg bg-black px-2 md:px-3 py-1.5 md:py-1 text-xs md:text-sm text-white h-8 md:h-10 cursor-pointer whitespace-nowrap'
       >
-        <Plus size={16} />
-        Add Manual Sequence
+        <Plus size={14} className='md:w-4 md:h-4' />
+        <span className='hidden sm:inline'>Add Manual Sequence</span>
+        <span className='sm:hidden'>Add Manual</span>
       </button>
     </div>
   )

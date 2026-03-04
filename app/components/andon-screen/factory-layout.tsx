@@ -26,7 +26,8 @@ type Props = {
   act_assy: number
   act_ckd: number
   activeCalls: CallStatus[]
-  processStatuses: ProcessStatus[] // ✅ tambah ini
+  processStatuses: ProcessStatus[]
+  isLandscape?: boolean // ← tambahan untuk mode horizontal
 }
 
 const normalize = (name: string | null | undefined): string => {
@@ -58,8 +59,12 @@ const getProcessPriority = (status: string): number => {
 const getStationState = (
   station: string,
   activeCalls: CallStatus[],
-  processStatuses: ProcessStatus[]
-) => {
+  processStatuses: ProcessStatus[],
+): {
+  bgColor: string
+  callType: 'LEADER' | 'MTN' | null
+  isBlinking: boolean
+} => {
   const normStation = normalize(station)
   if (!normStation) {
     return { bgColor: '#00ff04', callType: null, isBlinking: false }
@@ -79,7 +84,7 @@ const getStationState = (
 
   // ✅ PRIORITAS 2: Cari SEMUA status untuk station ini
   const matchingProcesses = processStatuses.filter(
-    (p) => normalize(p.station) === normStation
+    (p) => normalize(p.station) === normStation,
   )
 
   // Jika tidak ada data proses
@@ -91,7 +96,7 @@ const getStationState = (
   const bestProcess = matchingProcesses.reduce((prev, current) =>
     getProcessPriority(current.status) < getProcessPriority(prev.status)
       ? current
-      : prev
+      : prev,
   )
 
   const { status: procStatus, source } = bestProcess
@@ -130,7 +135,165 @@ export const FactoryLayout: FC<Props> = ({
   act_ckd,
   activeCalls,
   processStatuses,
+  isLandscape = false,
 }) => {
+  const getIconSrc = (callType: 'LEADER' | 'MTN' | null): string | null => {
+    if (!callType) return null
+    if (callType === 'LEADER') return '/images/leader.png'
+    if (callType === 'MTN') return '/images/maintenance.png'
+    return null
+  }
+
+  // ============ LANDSCAPE MODE (HORIZONTAL) ============
+  if (isLandscape) {
+    // Top row stations (kiri ke kanan)
+    const topStations = [
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'MANUAL ASSY 2',
+      undefined,
+      'MANUAL ASSY 1',
+      undefined,
+      undefined,
+      'UN LOADING',
+    ]
+
+    // Bottom row stations (kiri ke kanan)
+    const bottomStations = [
+      undefined,
+      undefined,
+      'MANUAL ASSY 3',
+      undefined,
+      'INSPECT',
+      undefined,
+      'FINAL JUDGE',
+      undefined,
+      undefined,
+      undefined,
+    ]
+
+    const boxWidth = DEFAULT_BOX_WIDTH
+    const boxHeight = DEFAULT_BOX_HEIGHT
+    const spacing = SPACING
+
+    return (
+      <div>
+        <div className='relative mx-auto mt-25' style={{ width: 1200, height: 400 }}>
+          {/* Transfer lines - U shape */}
+          {/* Vertical line kiri */}
+          <div
+            className='absolute bg-green-800'
+            style={{ left: 45, top: 80, width: 35, height: 240 }}
+          />
+          {/* Vertical line kanan */}
+          <div
+            className='absolute bg-green-800'
+            style={{ left: 945, top: 70, width: 35, height: 300 }}
+          />
+          {/* Horizontal line bawah */}
+          <div
+            className='absolute bg-green-800'
+            style={{ left: 45, top: 320, width: 120, height: 35 }}
+          />
+
+          {/* TOP ROW (10 stations - kiri ke kanan) */}
+          {topStations.map((label, i) => {
+            const x = 20 + i * (boxWidth + spacing)
+            const y = 10
+            const state = label
+              ? getStationState(label, activeCalls, processStatuses)
+              : { bgColor: '#00ff04', callType: null, isBlinking: false }
+
+            return (
+              <div key={`top-${i}`}>
+                <AbsBox
+                  x={x}
+                  y={y}
+                  label={label}
+                  bgColor={state.bgColor}
+                  isBlinking={state.isBlinking}
+                />
+                {state.callType && label && (
+                  <img
+                    src={getIconSrc(state.callType) || ''}
+                    alt={state.callType}
+                    className='absolute w-10 h-10 pointer-events-none z-50'
+                    style={{
+                      left: x + boxWidth / 2 - 20,
+                      top: y - 45,
+                    }}
+                  />
+                )}
+              </div>
+            )
+          })}
+
+          {/* BOTTOM ROW (10 stations - kiri ke kanan) */}
+          {bottomStations.map((label, i) => {
+            const x = 30 + i * (boxWidth + spacing) + boxWidth
+            const y = 300
+            const state = label
+              ? getStationState(label, activeCalls, processStatuses)
+              : { bgColor: '#00ff04', callType: null, isBlinking: false }
+
+            return (
+              <div key={`bottom-${i}`}>
+                <AbsBox
+                  x={x}
+                  y={y}
+                  label={label}
+                  bgColor={state.bgColor}
+                  isBlinking={state.isBlinking}
+                />
+                {state.callType && label && (
+                  <img
+                    src={getIconSrc(state.callType) || ''}
+                    alt={state.callType}
+                    className='absolute w-10 h-10 pointer-events-none z-50'
+                    style={{
+                      left: x + boxWidth / 2 - 20,
+                      top: y + boxHeight + 5,
+                    }}
+                  />
+                )}
+              </div>
+            )
+          })}
+
+          {/* ASSY / CKD di kanan (vertical stack) */}
+          <AbsBox
+            x={1020}
+            y={90}
+            w={150}
+            h={80}
+            className='flex items-center justify-center font-bold text-2xl px-2 py-2'
+          >
+            <div className='flex flex-col items-center'>
+              <span>ASSY</span>
+              <span className='mt-1'>({act_assy})</span>
+            </div>
+          </AbsBox>
+          <AbsBox
+            x={1020}
+            y={185}
+            w={150}
+            h={80}
+            className='flex items-center justify-center font-bold text-2xl px-2 py-2'
+          >
+            <div className='flex flex-col items-center'>
+              <span>CKD</span>
+              <span className='mt-1'>({act_ckd})</span>
+            </div>
+          </AbsBox>
+        </div>
+      </div>
+    )
+  }
+
+  // ============ PORTRAIT MODE (VERTICAL) ============
   // === KOLOM KIRI ===
   const leftBoxes = []
   let currentYLeft = 105
@@ -190,13 +353,6 @@ export const FactoryLayout: FC<Props> = ({
     currentY += DEFAULT_BOX_HEIGHT + SPACING
   }
 
-  const getIconSrc = (callType: 'LEADER' | 'MTN' | null): string | null => {
-    if (!callType) return null
-    if (callType === 'LEADER') return '/images/leader.png'
-    if (callType === 'MTN') return '/images/maintenance.png'
-    return null
-  }
-
   return (
     <div>
       <div className='relative mx-auto' style={{ width: 380, height: 900 }}>
@@ -223,7 +379,6 @@ export const FactoryLayout: FC<Props> = ({
                 x={10}
                 y={box.y}
                 label={box.label}
-                
                 bgColor={box.bgColor}
                 isBlinking={box.isBlinking}
               />
@@ -256,7 +411,6 @@ export const FactoryLayout: FC<Props> = ({
                 x={270}
                 y={box.y}
                 label={box.label}
-                
                 bgColor={box.bgColor}
                 isBlinking={box.isBlinking}
               />

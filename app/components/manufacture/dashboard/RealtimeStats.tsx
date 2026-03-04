@@ -15,82 +15,110 @@ type Props = {
   downtime: number
 }
 
-export function RealtimeStats({ target, plan, actual, effPct, downtime }: Props) {
+export function RealtimeStats({
+  target,
+  plan,
+  actual,
+  effPct,
+  downtime,
+}: Props) {
   return (
     <div className='mb-4 bg-white rounded-lg'>
       <div className='container mx-auto px-4 py-4'>
-        <div className='mb-4 flex items-center justify-between'>
-          <h2 className='text-xl font-bold'>Realtime Monitoring</h2>
+        <div className='mb-3 flex items-center justify-between'>
+          <h2 className='text-lg md:text-xl font-bold'>Realtime Monitoring</h2>
         </div>
 
         {/* Mobile View */}
         <div className='block md:hidden'>
-          <div className='grid gap-4'>
-            <div className='grid grid-cols-3 gap-4'>
+          <div className='grid gap-3'>
+            <div className='grid grid-cols-3 gap-3'>
               {/* Target */}
-              <div className='rounded-lg bg-sky-100 p-4'>
-                <div className='mb-2 flex items-center gap-3'>
+              <div className='rounded-lg bg-sky-100 p-3'>
+                <div className='mb-2 flex flex-col items-center gap-1'>
                   <div className='flex h-10 w-10 items-center justify-center rounded-full bg-sky-200'>
                     <Target className='h-5 w-5 text-sky-800' />
                   </div>
-                  <span className='text-sm font-medium'>Target</span>
+                  <span className='text-[10px] font-medium text-center'>
+                    Target
+                  </span>
                 </div>
-                <p className='text-lg font-bold text-sky-800'>{target} Units</p>
-                <p className='text-xs text-gray-500'>Today</p>
+                <p className='text-base font-bold text-sky-800 text-center'>
+                  {target}
+                </p>
+                <p className='text-[10px] text-sky-800 text-center'>Units</p>
+                <p className='text-[9px] text-gray-500 text-center'>Today</p>
               </div>
 
               {/* Plan */}
-              <div className='rounded-lg bg-slate-100 p-4'>
-                <div className='mb-2 flex items-center gap-3'>
+              <div className='rounded-lg bg-slate-100 p-3'>
+                <div className='mb-2 flex flex-col items-center gap-1'>
                   <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-200'>
                     <ClipboardList className='h-5 w-5 text-slate-700' />
                   </div>
-                  <span className='text-sm font-medium'>Plan</span>
+                  <span className='text-[10px] font-medium text-center'>
+                    Plan
+                  </span>
                 </div>
-                <p className='text-lg font-bold text-slate-700'>{plan} Units</p>
-                <p className='text-xs text-gray-500'>Today</p>
+                <p className='text-base font-bold text-slate-700 text-center'>
+                  {plan}
+                </p>
+                <p className='text-[10px] text-slate-700 text-center'>Units</p>
+                <p className='text-[9px] text-gray-500 text-center'>Today</p>
               </div>
 
               {/* Actual */}
-              <div className='rounded-lg bg-green-100 p-4'>
-                <div className='mb-2 flex items-center gap-3'>
+              <div className='rounded-lg bg-green-100 p-3'>
+                <div className='mb-2 flex flex-col items-center gap-1'>
                   <div className='flex h-10 w-10 items-center justify-center rounded-full bg-green-200'>
                     <CheckCircle className='h-5 w-5 text-green-600' />
                   </div>
-                  <span className='text-sm font-medium'>Actual</span>
+                  <span className='text-[10px] font-medium text-center'>
+                    Actual
+                  </span>
                 </div>
-                <p className='text-lg font-bold text-green-600'>
-                  {actual} Units
+                <p className='text-base font-bold text-green-600 text-center'>
+                  {actual}
                 </p>
-                <p className='text-xs text-gray-500'>Today</p>
+                <p className='text-[10px] text-green-600 text-center'>Units</p>
+                <p className='text-[9px] text-gray-500 text-center'>Today</p>
               </div>
             </div>
 
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-2 gap-3'>
               {/* Efficiency */}
-              <div className='rounded-lg bg-yellow-100 p-4'>
-                <div className='mb-2 flex items-center gap-3'>
+              <div className='rounded-lg bg-yellow-100 p-3'>
+                <div className='mb-2 flex flex-col items-center gap-1'>
                   <div className='flex h-10 w-10 items-center justify-center rounded-full bg-yellow-200'>
                     <BarChart2 className='h-5 w-5 text-yellow-600' />
                   </div>
-                  <span className='text-sm font-medium'>Efficiency</span>
+                  <span className='text-[10px] font-medium text-center'>
+                    Efficiency
+                  </span>
                 </div>
-                <p className='text-lg font-bold text-yellow-600'>{effPct} %</p>
-                <p className='text-xs text-gray-500'>Today</p>
+                <p className='text-base font-bold text-yellow-600 text-center'>
+                  {effPct} %
+                </p>
+                <p className='text-[9px] text-gray-500 text-center'>Today</p>
               </div>
 
               {/* Downtime */}
-              <div className='rounded-lg bg-red-100 p-4'>
-                <div className='mb-2 flex items-center gap-3'>
+              <div className='rounded-lg bg-red-100 p-3'>
+                <div className='mb-2 flex flex-col items-center gap-1'>
                   <div className='flex h-10 w-10 items-center justify-center rounded-full bg-red-200'>
                     <TimerOff className='h-5 w-5 text-red-600' />
                   </div>
-                  <span className='text-sm font-medium'>Total Downtime</span>
+                  <span className='text-[10px] font-medium text-center leading-tight'>
+                    Total
+                    <br />
+                    Downtime
+                  </span>
                 </div>
-                <p className='text-lg font-bold text-red-600'>
-                  {downtime} Minutes
+                <p className='text-base font-bold text-red-600 text-center'>
+                  {downtime}
                 </p>
-                <p className='text-xs text-gray-500'>Today</p>
+                <p className='text-[10px] text-red-600 text-center'>Minutes</p>
+                <p className='text-[9px] text-gray-500 text-center'>Today</p>
               </div>
             </div>
           </div>

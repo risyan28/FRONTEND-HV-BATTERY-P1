@@ -84,13 +84,13 @@ export function MyProfilePage() {
   }
 
   return (
-    <div className='max-w-8xl mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8'>
+    <div className='max-w-8xl mx-auto w-full px-2 py-4 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8'>
       {/* Header Section - Modified for mobile single-line layout */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className='mb-6 flex items-center gap-4 sm:items-start sm:gap-6'
+        className='mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 sm:items-start sm:gap-6'
       >
         {/* Loading State for Back Button */}
         {isLoading ? (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getSocket } from '@/lib/socket'
+import { getSocket, subscribeRoom, unsubscribeRoom } from '@/lib/socket'
 import { useSocketStatus } from './use-socket-status'
 import type { SequenceState } from '@/types/sequence'
 
@@ -21,16 +21,15 @@ export function useSequenceSocket() {
 
   useEffect(() => {
     const socket = getSocket()
+    // subscribeRoom: daftar ke room + otomatis re-subscribe+sync saat reconnect
+    subscribeRoom('sequences')
 
-    // 📥 Subscribe ke data 'sequences'
-    socket.emit('subscribe', 'sequences')
     const handleUpdate = (payload: SequenceState) => setSequences(payload)
     socket.on('sequences:update', handleUpdate)
 
     return () => {
       socket.off('sequences:update', handleUpdate)
-      // 📤 Unsubscribe saat unmount
-      socket.emit('unsubscribe', 'sequences')
+      unsubscribeRoom('sequences')
     }
   }, [])
 

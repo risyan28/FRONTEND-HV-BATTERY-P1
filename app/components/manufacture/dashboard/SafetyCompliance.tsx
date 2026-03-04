@@ -7,26 +7,26 @@ export function SafetyCompliance() {
       whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.3 }}
     >
-      <div className='container mx-auto mb-10 px-4 md:mb-6'>
-        <div className='flex h-36 items-center justify-center rounded-xl bg-yellow-400 p-4 shadow-md md:p-6'>
-          <div className='flex w-full flex-row items-center justify-center space-y-4 text-center md:flex-row md:space-x-6 md:space-y-0'>
+      <div className='container mx-auto mb-20 md:mb-6 px-4'>
+        <div className='flex h-24 md:h-36 items-center justify-center rounded-xl bg-yellow-400 p-3 md:p-6 shadow-md'>
+          <div className='flex w-full flex-row items-center justify-center gap-2 md:gap-6 text-center'>
             {/* Icon ⚠️ */}
-            <div className='text-lg sm:text-4xl md:text-7xl lg:text-8xl'>
+            <div className='text-3xl md:text-7xl lg:text-8xl flex-shrink-0'>
               ⚠️
             </div>
 
             {/* Text */}
-            <div className='px-2'>
-              <h2 className='text-nowrap text-lg font-semibold text-black md:text-4xl'>
+            <div className='flex-1'>
+              <h2 className='text-sm md:text-4xl font-semibold text-black leading-tight'>
                 Safety & Compliance
               </h2>
-              <p className='text-nowrap text-sm text-black/80 md:text-2xl'>
+              <p className='text-xs md:text-2xl text-black/80'>
                 Patuhi Prosedur Keselamatan Kerja
               </p>
             </div>
 
             {/* Helmet Image */}
-            <div className='w-8 sm:w-20 md:w-40 lg:w-40 xl:w-40'>
+            <div className='w-12 md:w-40 flex-shrink-0'>
               <img
                 src='/images/safety-helmet.png'
                 width={512}

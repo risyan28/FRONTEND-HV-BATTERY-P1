@@ -1,7 +1,5 @@
 // routes atau page utama: misal app/routes/history-print.tsx
 'use client'
-
-import { motion } from 'framer-motion'
 import { PageHeader } from '@/components/production/page-header'
 import { usePrintHistory } from '@/hooks/use-print-history'
 import { HistoryPrintLabel } from './history-print'
@@ -19,27 +17,25 @@ export function HistoryPrint() {
   } = usePrintHistory()
 
   return (
-    <div className='max-w-8xl mx-auto w-full px-2 py-4 sm:px-4 sm:py-6 lg:px-4'>
-      <PageHeader isLoading={loading || isSearching} title='History Printing' />
+    <div className='h-screen flex flex-col'>
+      <div className='flex-shrink-0 px-2 md:px-6 py-2 md:py-4'>
+        <PageHeader
+          isLoading={loading || isSearching}
+          title='History Printing'
+        />
+      </div>
 
-      <div className='flex-1 flex gap-2 px-2 sm:px-4 lg:px-0 pb-4 overflow-hidden'>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className='flex-1 rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
-        >
-          <HistoryPrintLabel
-            data={data}
-            filteredData={filteredData}
-            loading={loading}
-            isSearching={isSearching}
-            dateRange={dateRange}
-            setDateRange={setDateRange}
-            searchByDate={searchByDate}
-            handleRePrint={handleRePrint}
-          />
-        </motion.div>
+      <div className='flex-1 min-h-0 flex flex-col'>
+        <HistoryPrintLabel
+          data={data}
+          filteredData={filteredData}
+          loading={loading}
+          isSearching={isSearching}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          searchByDate={searchByDate}
+          handleRePrint={handleRePrint}
+        />
       </div>
     </div>
   )

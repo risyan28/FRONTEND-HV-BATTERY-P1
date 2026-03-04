@@ -28,21 +28,21 @@ export function CompletedSection({ data }: CompletedSectionProps) {
   return (
     <div
       ref={containerRef}
-      className='flex-[2] bg-card rounded-lg border border-border overflow-y-auto shadow-sm h-[calc(100vh-300px)]'
+      className='flex-[20] md:flex-[20] bg-card rounded-lg border border-border overflow-y-auto shadow-sm h-full'
     >
-      <div className='bg-green-600 text-white p-4 flex justify-between items-center h-11 sticky top-0 z-10'>
-        <h2 className='text-2xl font-semibold'>Completed Sequence</h2>
+      <div className='bg-green-600 text-white p-1 md:p-2 flex justify-between items-center h-7 md:h-9 sticky top-0 z-10'>
+        <h2 className='text-xs md:text-xl font-semibold'>Completed Sequence</h2>
       </div>
-      <div className='p-4 space-y-3'>
+      <div className='p-1 md:p-2 space-y-1 md:space-y-2'>
         {data.length === 0 ? (
-          <div className='text-center text-muted-foreground py-8 text-xl'>
+          <div className='text-center text-muted-foreground py-4 md:py-8 text-sm md:text-xl'>
             No completed sequences
           </div>
         ) : (
           sortedData.map((item) => (
             <motion.div
               key={item.FID}
-              className='bg-muted rounded-lg p-2 border-l-4 border-green-500 shadow-sm'
+              className='bg-muted rounded-lg p-1.5 md:p-2 border-l-4 border-green-500 shadow-sm'
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
@@ -50,35 +50,41 @@ export function CompletedSection({ data }: CompletedSectionProps) {
               {/* Seq & Model */}
               <div className='flex justify-between'>
                 <div>
-                  <span className='text-md text-muted-foreground'>No Seq:</span>
-                  <span className='ml-1 font-mono font-semibold'>
+                  <span className='text-[10px] md:text-md text-muted-foreground'>
+                    No Seq:
+                  </span>
+                  <span className='ml-1 font-mono font-semibold text-[10px] md:text-base'>
                     {item.FBARCODE?.slice(-7)}
                   </span>
                 </div>
                 <div>
-                  <span className='text-md text-muted-foreground'>Type:</span>
-                  <span className='ml-1 font-bold'>{item.FMODEL_BATTERY}</span>
+                  <span className='text-[10px] md:text-md text-muted-foreground'>
+                    Type:
+                  </span>
+                  <span className='ml-1 font-bold text-[10px] md:text-base'>
+                    {item.FMODEL_BATTERY}
+                  </span>
                 </div>
               </div>
 
               {/* Barcode */}
-              <div className='mt-2 flex justify-between'>
+              <div className='mt-1 md:mt-2 flex justify-between'>
                 <div>
-                  <span className='text-md text-muted-foreground'>
+                  <span className='text-[10px] md:text-md text-muted-foreground'>
                     Barcode:
                   </span>
-                  <span className='ml-1 font-mono text-md font-bold'>
+                  <span className='ml-1 font-mono text-[10px] md:text-base font-bold'>
                     {item.FBARCODE}
                   </span>
                 </div>
               </div>
 
               {/* Time Complete */}
-              <div className='mt-2'>
-                <span className='text-md text-muted-foreground'>
+              <div className='mt-1 md:mt-2'>
+                <span className='text-[10px] md:text-md text-muted-foreground'>
                   Time Complete:
                 </span>
-                <span className='ml-1 text-md font-bold'>
+                <span className='ml-1 text-[10px] md:text-base font-bold'>
                   {item.FTIME_COMPLETED}
                 </span>
               </div>

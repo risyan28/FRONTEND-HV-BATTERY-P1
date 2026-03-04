@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Screenshot Generator</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 { color: #1e3a8a; }
+    .info {
+      background: #eff6ff;
+      border-left: 4px solid #1e3a8a;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    button {
+      background: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 10px 5px;
+    }
+    button:hover { background: #2563eb; }
+    .preview {
+      margin: 20px 0;
+      border: 2px solid #e5e7eb;
+      display: inline-block;
+    }
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📸 PWA Screenshot Generator</h1>
+    
+    <div class="info">
+      <strong>Instruksi:</strong>
+      <ol>
+        <li>Klik tombol "Generate Screenshots" di bawah</li>
+        <li>Download screenshot mobile (390x844) dan desktop (1920x1080)</li>
+        <li>Simpan ke folder <code>public/images/</code></li>
+        <li>Refresh browser - warning PWA screenshot akan hilang</li>
+      </ol>
+      <p><strong>Note:</strong> Untuk production, replace dengan screenshot real dari aplikasi kamu.</p>
+    </div>
+
+    <div>
+      <button onclick="generateAndDownloadAll()">🎨 Generate All Screenshots</button>
+    </div>
+
+    <div id="preview"></div>
+  </div>
+
+  <script>
+    function generateMobileScreenshot() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 390;
+      canvas.height = 844;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#f9fafb';
+      ctx.fillRect(0, 0, 390, 844);
+
+      // Header bar
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(0, 0, 390, 70);
+
+      // Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText('HV Battery P1', 20, 45);
+
+      // Cards
+      const drawCard = (x, y, w, h, color) => {
+        ctx.fillStyle = color;
+        ctx.roundRect(x, y, w, h, 12);
+        ctx.fill();
+      };
+
+      // Stats cards
+      drawCard(20, 90, 165, 120, '#dbeafe');
+      drawCard(205, 90, 165, 120, '#dbeafe');
+
+      // Chart area
+      drawCard(20, 230, 350, 200, '#ffffff');
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(20, 230, 350, 200);
+
+      // List items
+      drawCard(20, 450, 350, 80, '#ffffff');
+      ctx.strokeRect(20, 450, 350, 80);
+      drawCard(20, 545, 350, 80, '#ffffff');
+      ctx.strokeRect(20, 545, 350, 80);
+      drawCard(20, 640, 350, 80, '#ffffff');
+      ctx.strokeRect(20, 640, 350, 80);
+
+      // Text labels
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = 'bold 14px Arial';
+      ctx.fillText('Production', 35, 125);
+      ctx.fillText('Quality', 220, 125);
+      
+      ctx.font = '12px Arial';
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText('Dashboard Mobile View', 95, 800);
+
+      return canvas;
+    }
+
+    function generateDesktopScreenshot() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1920;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#f9fafb';
+      ctx.fillRect(0, 0, 1920, 1080);
+
+      // Header
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(0, 0, 1920, 80);
+
+      // Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 28px Arial';
+      ctx.fillText('HV Battery P1 - TMMIN', 80, 50);
+
+      const drawCard = (x, y, w, h, color) => {
+        ctx.fillStyle = color;
+        ctx.roundRect(x, y, w, h, 16);
+        ctx.fill();
+        if (color === '#ffffff') {
+          ctx.strokeStyle = '#e5e7eb';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      };
+
+      // Sidebar
+      drawCard(40, 110, 300, 920, '#ffffff');
+
+      // Main content
+      // Stats cards row
+      drawCard(380, 110, 450, 200, '#dbeafe');
+      drawCard(860, 110, 450, 200, '#dbeafe');
+      drawCard(1340, 110, 540, 200, '#dbeafe');
+
+      // Chart section
+      drawCard(380, 340, 900, 700, '#ffffff');
+
+      // Right panel
+      drawCard(1310, 340, 570, 340, '#ffffff');
+      drawCard(1310, 710, 570, 330, '#ffffff');
+
+      // Text labels
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = 'bold 22px Arial';
+      ctx.fillText('Production Dashboard', 800, 160);
+
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Menu', 80, 160);
+      ctx.fillText('Statistics', 420, 390);
+      ctx.fillText('Overview', 1350, 390);
+
+      ctx.font = '16px Arial';
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText('HV Battery Production Management System', 750, 1050);
+
+      return canvas;
+    }
+
+    function downloadCanvas(canvas, filename) {
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    }
+
+    function generateAndDownloadAll() {
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '<h3>Screenshots Generated:</h3>';
+
+      // Mobile screenshot
+      const mobileCanvas = generateMobileScreenshot();
+      const mobileContainer = document.createElement('div');
+      mobileContainer.className = 'preview';
+      mobileContainer.style.marginRight = '20px';
+      mobileContainer.innerHTML = `
+        <p><strong>Mobile (390x844)</strong></p>
+        ${mobileCanvas.outerHTML}
+        <button onclick="downloadCanvas(this.previousElementSibling, 'screenshot-mobile.png')">
+          ⬇️ Download Mobile
+        </button>
+      `;
+      preview.appendChild(mobileContainer);
+
+      // Desktop screenshot
+      const desktopCanvas = generateDesktopScreenshot();
+      const desktopContainer = document.createElement('div');
+      desktopContainer.className = 'preview';
+      desktopContainer.innerHTML = `
+        <p><strong>Desktop Wide (1920x1080)</strong></p>
+        ${desktopCanvas.outerHTML}
+        <button onclick="downloadCanvas(this.previousElementSibling, 'screenshot-desktop.png')">
+          ⬇️ Download Desktop
+        </button>
+      `;
+      preview.appendChild(desktopContainer);
+
+      // Auto-download both
+      setTimeout(() => {
+        downloadCanvas(mobileCanvas, 'screenshot-mobile.png');
+        setTimeout(() => {
+          downloadCanvas(desktopCanvas, 'screenshot-desktop.png');
+        }, 500);
+      }, 100);
+
+      alert('✅ Screenshots generated!\n\nSave both files to: public/images/\n\nFilenames:\n- screenshot-mobile.png\n- screenshot-desktop.png');
+    }
+
+    // Polyfill for roundRect if needed
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.closePath();
+      };
+    }
+  </script>
+</body>
+</html>

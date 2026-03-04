@@ -5,6 +5,8 @@ import { useState, useCallback, useEffect } from 'react'
 import type { TraceabilityData } from '@/types/traceability'
 import { traceabilityApi } from '@/services/traceabilityApi'
 import { toast } from 'sonner'
+import { handleError } from '@/lib/error-handler'
+import logger from '@/lib/logger'
 
 interface UseTraceabilityResult {
   data: TraceabilityData[]
@@ -39,14 +41,17 @@ export const useTraceability = (): UseTraceabilityResult => {
     try {
       setLoading(true)
       setError(null)
+      logger.debug('Fetching traceability data', { from, to })
+
       const result = await traceabilityApi.getByDateRange(from, to)
       setData(result)
       setFilteredData(result)
-    } catch (err: any) {
-      console.error('Error fetching traceability data:', err)
-      const msg = err?.response?.data?.message || err?.message || 'Failed to load traceability data'
-      setError(msg)
-      toast.error(`Backend Error: ${msg}`)
+
+      logger.info('Traceability data loaded', { count: result.length })
+    } catch (err) {
+      // ✅ Use centralized error handler
+      const errorResult = handleError(err, { operation: 'fetchAll', from, to })
+      setError(errorResult.userMessage)
       setData([])
       setFilteredData([])
     } finally {
@@ -66,15 +71,22 @@ export const useTraceability = (): UseTraceabilityResult => {
     setError(null)
 
     try {
+      logger.debug('Searching traceability by date', { from, to })
+
       const result = await traceabilityApi.getByDateRange(from, to)
       setData(result)
       setFilteredData(result)
+
       toast.success(`Ditemukan ${result.length} data`)
-    } catch (err: any) {
-      console.error('Error searching traceability data:', err)
-      const msg = err?.response?.data?.message || err?.message || 'Failed to search traceability data'
-      setError(msg)
-      toast.error(`Backend Error: ${msg}`)
+      logger.info('Traceability search completed', { count: result.length })
+    } catch (err) {
+      // ✅ Use centralized error handler
+      const errorResult = handleError(err, {
+        operation: 'searchByDate',
+        from,
+        to,
+      })
+      setError(errorResult.userMessage)
       setData([])
       setFilteredData([])
     } finally {
@@ -83,6 +95,7 @@ export const useTraceability = (): UseTraceabilityResult => {
   }, [dateRange])
 
   const refetch = useCallback(async () => {
+    logger.debug('Refetching traceability data')
     await fetchAll()
     setDateRange({ from: today, to: today })
   }, [fetchAll, today])

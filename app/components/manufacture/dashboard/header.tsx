@@ -66,27 +66,29 @@ export function Header({ onMenuClick }: HeaderProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`sticky top-0 w-full py-3 text-white transition-all duration-700 ${
+      className={`sticky top-0 w-full py-2 md:py-3 text-white transition-all duration-700 ${
         scrolled ? 'shadow-lg' : ''
-      } bg-gradient-to-r ${getGradient()}`}
+      } bg-gradient-to-r ${getGradient()} z-40`}
     >
-      <div className='container mx-auto flex items-center justify-between px-4 h-12'>
-        {/* Left section: Menu + Logo */}
-        <div className='flex items-center gap-4'>
+      <div className='container mx-auto flex items-center justify-between px-3 md:px-4 h-10 md:h-12'>
+        {/* Left section: Menu (mobile & desktop) + Logo (desktop only) */}
+        <div className='flex items-center gap-2 md:gap-4'>
+          {/* Menu button - always visible */}
           <Button
             variant='ghost'
             size='icon'
-            className='text-white hover:bg-white/20'
+            className='text-white hover:bg-white/20 h-8 w-8 md:h-10 md:w-10'
             onClick={onMenuClick}
           >
-            <Menu className='h-10 w-10' />
+            <Menu className='h-5 w-5 md:h-10 md:w-10' />
           </Button>
 
+          {/* Logo - desktop only on left */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className='flex items-center'
+            className='hidden md:flex items-center'
           >
             <img
               src='/images/tmmin.png'
@@ -98,32 +100,38 @@ export function Header({ onMenuClick }: HeaderProps) {
           </motion.div>
         </div>
 
-        {/* Center section: e-WOS */}
+        {/* Center section: Title */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className='relative'
+          className='flex-1 mx-2'
         >
-          <h1 className='flex-1 text-center font-bold whitespace-nowrap overflow-hidden text-ellipsis text-[clamp(1rem,3vw,3rem)] leading-none'>
+          <h1 className='text-center font-bold whitespace-nowrap overflow-hidden text-ellipsis text-xs sm:text-sm md:text-2xl lg:text-3xl leading-tight'>
             HEV BATTERY DASHBOARD PLANT 1
           </h1>
-          <motion.span
-            className=''
-            animate={{ width: '100%' }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-          />
         </motion.div>
 
-        {/* Right section: Avatar + User Info */}
+        {/* Right section: Logo (mobile), Time & Date (desktop) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.4 }}
           className='flex items-center gap-3'
         >
-          {/* Time & Date kanan */}
-          <div className='flex flex-col items-end justify-center text-right flex-none'>
+          {/* Logo - mobile only on right */}
+          <div className='md:hidden flex items-center'>
+            <img
+              src='/images/tmmin.png'
+              alt='Toyota Logo'
+              width={120}
+              height={40}
+              className='h-8 w-auto object-contain'
+            />
+          </div>
+
+          {/* Time & Date - desktop only */}
+          <div className='hidden md:flex flex-col items-end justify-center text-right flex-none'>
             <span className='text-2xl font-mono font-bold'>
               {formatTime(currentTime)}
             </span>

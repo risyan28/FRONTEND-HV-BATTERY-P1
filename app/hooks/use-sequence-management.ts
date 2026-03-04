@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import type { SequenceState, ConfirmDialogState } from '@/types/sequence'
 import { sequenceApi } from '@/services/sequenceApi'
 import { toast } from 'sonner'
+import { handleError } from '@/lib/error-handler'
+import logger from '@/lib/logger'
 
 export const useSequenceManagement = () => {
   const [sequences, setSequences] = useState<SequenceState>({
@@ -28,6 +30,8 @@ export const useSequenceManagement = () => {
     try {
       setLoading(true)
       setError(null)
+      logger.debug('Fetching sequences')
+
       const data = await sequenceApi.getSequences()
 
       // Normalisasi biar selalu ada array kosong
@@ -37,12 +41,17 @@ export const useSequenceManagement = () => {
         completed: data.completed ?? [],
         parked: data.parked ?? [],
       })
-      console.log('test', data)
+
+      logger.info('Sequences loaded', {
+        currentId: data.current?.FID,
+        queueCount: data.queue?.length ?? 0,
+        completedCount: data.completed?.length ?? 0,
+        parkedCount: data.parked?.length ?? 0,
+      })
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch sequences'
-      setError(errorMessage)
-      toast.error(errorMessage)
+      // ✅ Use centralized error handler
+      const errorResult = handleError(err, { operation: 'fetchSequences' })
+      setError(errorResult.userMessage)
     } finally {
       setLoading(false)
     }
@@ -67,7 +76,7 @@ export const useSequenceManagement = () => {
         action,
       })
     },
-    []
+    [],
   )
 
   const closeConfirmDialog = useCallback(() => {
@@ -99,22 +108,30 @@ export const useSequenceManagement = () => {
         `Are you sure you want to move sequence ${sequence.FBARCODE} up?`,
         async () => {
           try {
+            logger.info('Moving sequence up', {
+              sequenceId: sequence.FID,
+              index,
+            })
+
             const updatedSequences = await sequenceApi.moveSequenceUp(
               sequence.FID.toString(),
-              index
+              index,
             )
             setSequences(updatedSequences)
             setHighlightWithCleanup(sequence.FID)
             toast.success('Sequence moved up successfully')
           } catch (err) {
-            const errorMessage =
-              err instanceof Error ? err.message : 'Failed to move sequence up'
-            toast.error(errorMessage)
+            // ✅ Use centralized error handler
+            handleError(err, {
+              operation: 'moveSequenceUp',
+              sequenceId: sequence.FID,
+              index,
+            })
           }
-        }
+        },
       )
     },
-    [sequences.queue, showConfirmDialog, setHighlightWithCleanup]
+    [sequences.queue, showConfirmDialog, setHighlightWithCleanup],
   )
 
   const moveSequenceDown = useCallback(
@@ -127,24 +144,30 @@ export const useSequenceManagement = () => {
         `Are you sure you want to move sequence ${sequence.FBARCODE} down?`,
         async () => {
           try {
+            logger.info('Moving sequence down', {
+              sequenceId: sequence.FID,
+              index,
+            })
+
             const updatedSequences = await sequenceApi.moveSequenceDown(
               sequence.FID.toString(),
-              index
+              index,
             )
             setSequences(updatedSequences)
             setHighlightWithCleanup(sequence.FID)
             toast.success('Sequence moved down successfully')
           } catch (err) {
-            const errorMessage =
-              err instanceof Error
-                ? err.message
-                : 'Failed to move sequence down'
-            toast.error(errorMessage)
+            // ✅ Use centralized error handler
+            handleError(err, {
+              operation: 'moveSequenceDown',
+              sequenceId: sequence.FID,
+              index,
+            })
           }
-        }
+        },
       )
     },
-    [sequences.queue, showConfirmDialog, setHighlightWithCleanup]
+    [sequences.queue, showConfirmDialog, setHighlightWithCleanup],
   )
 
   const parkSequence = useCallback(
@@ -155,26 +178,30 @@ export const useSequenceManagement = () => {
         `Are you sure you want to park sequence ${sequence.FBARCODE}?`,
         async () => {
           try {
+            logger.info('Parking sequence', { sequenceId: sequence.FID })
+
             const updatedSequences = await sequenceApi.parkSequence(
-              sequence.FID.toString()
+              sequence.FID.toString(),
             )
             setSequences(updatedSequences)
             toast.success('Sequence parked successfully')
           } catch (err) {
-            const errorMessage =
-              err instanceof Error ? err.message : 'Failed to park sequence'
-            toast.error(errorMessage)
+            // ✅ Use centralized error handler
+            handleError(err, {
+              operation: 'parkSequence',
+              sequenceId: sequence.FID,
+            })
           }
-        }
+        },
       )
     },
-    [sequences.queue, showConfirmDialog]
+    [sequences.queue, showConfirmDialog],
   )
 
   const insertSequence = useCallback(
     async (
       parkedIndex: number,
-      payload: { anchorId?: number; position?: 'beginning' | 'end' }
+      payload: { anchorId?: number; position?: 'beginning' | 'end' },
     ) => {
       const sequence = sequences.parked[parkedIndex]
 
@@ -183,22 +210,30 @@ export const useSequenceManagement = () => {
         `Are you sure you want to insert sequence ${sequence.FBARCODE} into the queue?`,
         async () => {
           try {
+            logger.info('Inserting sequence', {
+              sequenceId: sequence.FID,
+              payload,
+            })
+
             const updatedSequences = await sequenceApi.insertSequence(
               sequence.FID, // sequence yang mau diinsert
-              payload // informasi posisi
+              payload, // informasi posisi
             )
             setSequences(updatedSequences)
             setHighlightWithCleanup(sequence.FID)
             toast.success('Sequence inserted successfully')
           } catch (err) {
-            const errorMessage =
-              err instanceof Error ? err.message : 'Failed to insert sequence'
-            toast.error(errorMessage)
+            // ✅ Use centralized error handler
+            handleError(err, {
+              operation: 'insertSequence',
+              sequenceId: sequence.FID,
+              payload,
+            })
           }
-        }
+        },
       )
     },
-    [sequences.parked, showConfirmDialog, setHighlightWithCleanup]
+    [sequences.parked, showConfirmDialog, setHighlightWithCleanup],
   )
 
   const removeFromParked = useCallback(
@@ -209,34 +244,42 @@ export const useSequenceManagement = () => {
         `Are you sure you want to remove sequence ${sequence.FBARCODE} from parked?`,
         async () => {
           try {
+            logger.info('Removing sequence from parked', {
+              sequenceId: sequence.FID,
+            })
+
             const updatedSequences = await sequenceApi.removeFromParked(
-              sequence.FID.toString()
+              sequence.FID.toString(),
             )
             setSequences(updatedSequences)
             toast.success('Sequence removed from parked')
           } catch (err) {
-            const errorMessage =
-              err instanceof Error ? err.message : 'Failed to remove sequence'
-            toast.error(errorMessage)
+            // ✅ Use centralized error handler
+            handleError(err, {
+              operation: 'removeFromParked',
+              sequenceId: sequence.FID,
+            })
           }
-        }
+        },
       )
     },
-    [sequences.parked, showConfirmDialog]
+    [sequences.parked, showConfirmDialog],
   )
 
   const onAddManualSeq = useCallback(async () => {
     try {
+      logger.info('Adding manual sequence', { type: 'E', model: 'LI-688D' })
+
       await sequenceApi.createSequence({
         FTYPE_BATTERY: 'E',
         FMODEL_BATTERY: 'LI-688D',
       })
+
       toast.success('Manual sequence injected successfully')
       await fetchSequences()
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to inject sequence'
-      toast.error(errorMessage)
+      // ✅ Use centralized error handler
+      handleError(err, { operation: 'onAddManualSeq' })
     }
   }, [fetchSequences])
 

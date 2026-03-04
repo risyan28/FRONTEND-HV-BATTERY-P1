@@ -17,9 +17,23 @@ export function SequenceTable({ data }: SequenceTableProps) {
     'DATA FROM',
   ]
   const mobileHeaders = ['SEQ', 'TYPE', 'KO', 'BODY', 'BARCODE', 'TIME', 'FROM']
+  // Desktop widths
   const columnWidths = ['10%', '10%', '10%', '10%', '25%', '25%', '10%']
+  // Mobile widths - wider for barcode and time
+  const mobileColumnWidths = ['8%', '10%', '8%', '8%', '30%', '28%', '8%']
   const containerRef = useRef<HTMLDivElement>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // bikin data terurut sebelum di-map
   const sortedData = [...data].sort((a, b) => {
@@ -37,26 +51,32 @@ export function SequenceTable({ data }: SequenceTableProps) {
   }, []) // kosong → cuma sekali
 
   return (
-    <div className='flex-8 rounded-lg border border-border overflow-hidden shadow-sm h-[calc(100vh-300px)]'>
-      <div className='h-full flex flex-col overflow-hidden'>
+    <div className='flex-[80] md:flex-[80] rounded-lg border border-border overflow-hidden shadow-sm flex flex-col h-full'>
+      <div className='flex flex-col h-full overflow-hidden'>
         {/* Header */}
-        <div className='flex text-lg font-bold bg-gray-400 h-16'>
+        <div className='flex text-lg font-bold bg-gray-400 h-7 md:h-12'>
           {headers.map((header, index) => (
             <div
               key={header}
               style={{
-                flexBasis: columnWidths[index],
+                flexBasis: isMobile
+                  ? mobileColumnWidths[index]
+                  : columnWidths[index],
                 flexGrow: 0,
                 flexShrink: 0,
               }}
-              className={`min-w-0 p-2 text-center text-slate-900 last:border-r-0 ${
-                header === 'BARCODE' || header === 'TIME RECEIVED'
-                  ? 'text-xl'
-                  : 'text-lg'
+              className={`min-w-0 p-0.5 md:p-2 text-center text-slate-900 last:border-r-0 flex items-center justify-center text-xs md:text-lg ${
+                header === 'BARCODE' ||
+                header === 'TIME RECEIVED' ||
+                header === 'DATA FROM'
+                  ? 'md:text-2xl'
+                  : ''
               }`}
             >
-              <span className='hidden sm:inline'>{header}</span>
-              <span className='sm:hidden'>{mobileHeaders[index]}</span>
+              <span className='hidden md:inline'>{header}</span>
+              <span className='md:hidden text-[9px] leading-tight'>
+                {mobileHeaders[index]}
+              </span>
             </div>
           ))}
         </div>
@@ -90,13 +110,15 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* NO SEQ */}
                     <div
                       style={{
-                        flexBasis: columnWidths[0],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[0]
+                          : columnWidths[0],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center font-bold 
+                      className='min-w-0 p-0.5 md:p-2 text-center font-bold 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 text-lg'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 text-[10px] md:text-lg'
                     >
                       {row.FBARCODE?.slice(-7)}
                     </div>
@@ -104,18 +126,20 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* TYPE BATTERY */}
                     <div
                       style={{
-                        flexBasis: columnWidths[1],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[1]
+                          : columnWidths[1],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center 
+                      className='min-w-0 p-0.5 md:p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-lg'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-[9px] md:text-lg'
                     >
-                      <span className='hidden sm:inline'>
+                      <span className='hidden md:inline'>
                         {row.FMODEL_BATTERY}
                       </span>
-                      <span className='sm:hidden'>
+                      <span className='md:hidden'>
                         {row.FMODEL_BATTERY.split('-')[0]}
                       </span>
                     </div>
@@ -123,13 +147,15 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* KO SEQ */}
                     <div
                       style={{
-                        flexBasis: columnWidths[2],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[2]
+                          : columnWidths[2],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center 
+                      className='min-w-0 p-0.5 md:p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-lg'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-[9px] md:text-lg'
                     >
                       {row.FSEQ_K0}
                     </div>
@@ -137,13 +163,15 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* NO BODY */}
                     <div
                       style={{
-                        flexBasis: columnWidths[3],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[3]
+                          : columnWidths[3],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center 
+                      className='min-w-0 p-0.5 md:p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-lg'
+                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-[9px] md:text-lg'
                     >
                       {row.FBODY_NO_K0}
                     </div>
@@ -151,11 +179,13 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* BARCODE */}
                     <div
                       style={{
-                        flexBasis: columnWidths[4],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[4]
+                          : columnWidths[4],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center font-mono text-xl font-bold 
+                      className='min-w-0 p-0.5 md:p-2 text-center font-mono text-[9px] md:text-xl font-bold 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
                              border-r border-slate-200 dark:border-slate-600 last:border-r-0 
                              overflow-hidden truncate'
@@ -166,14 +196,16 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* TIME RECEIVED */}
                     <div
                       style={{
-                        flexBasis: columnWidths[5],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[5]
+                          : columnWidths[5],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center font-mono font-bold 
+                      className='min-w-0 p-0.5 md:p-2 text-center font-mono font-bold 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
                              border-r border-slate-200 dark:border-slate-600 last:border-r-0 
-                             overflow-hidden truncate text-xl'
+                             overflow-hidden truncate text-[9px] md:text-xl'
                     >
                       {row.FTIME_RECEIVED}
                     </div>
@@ -181,12 +213,14 @@ export function SequenceTable({ data }: SequenceTableProps) {
                     {/* DATA FROM */}
                     <div
                       style={{
-                        flexBasis: columnWidths[6],
+                        flexBasis: isMobile
+                          ? mobileColumnWidths[6]
+                          : columnWidths[6],
                         flexGrow: 0,
                         flexShrink: 0,
                       }}
-                      className='min-w-0 p-2 text-center 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-md'
+                      className='min-w-0 p-0.5 md:p-2 text-center 
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-[9px] md:text-lg'
                     >
                       {row.FALC_DATA}
                     </div>

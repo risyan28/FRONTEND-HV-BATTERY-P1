@@ -70,37 +70,41 @@ export function SequenceRow({
 
   const getActions = () => {
     if (type !== 'queue') {
-      return <td className='px-4 py-3 text-center'>-</td>
+      return (
+        <td className='px-1 md:px-4 py-2 md:py-3 text-center text-[10px] md:text-sm'>
+          -
+        </td>
+      )
     }
 
     return (
-      <td className='px-4 py-3 text-left'>
-        <div className='flex items-center justify-center gap-1'>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-left'>
+        <div className='flex items-center justify-center gap-0.5 md:gap-1'>
           <Button
             size='sm'
             variant='ghost'
             onClick={() => onMoveDown?.(index)}
             disabled={index === queueLength - 1}
-            className='h-8 w-8 p-0'
+            className='h-6 w-6 md:h-8 md:w-8 p-0'
           >
-            <ArrowUp className='h-4 w-4' />
+            <ArrowUp className='h-3 w-3 md:h-4 md:w-4' />
           </Button>
           <Button
             size='sm'
             variant='ghost'
             onClick={() => onMoveUp?.(index)}
             disabled={index === 0}
-            className='h-8 w-8 p-0'
+            className='h-6 w-6 md:h-8 md:w-8 p-0'
           >
-            <ArrowDown className='h-4 w-4' />
+            <ArrowDown className='h-3 w-3 md:h-4 md:w-4' />
           </Button>
           <Button
             size='sm'
             variant='ghost'
             onClick={() => onPark?.(index)}
-            className='h-8 w-8 p-0'
+            className='h-6 w-6 md:h-8 md:w-8 p-0'
           >
-            <MoveRight className='h-4 w-4' />
+            <MoveRight className='h-3 w-3 md:h-4 md:w-4' />
           </Button>
         </div>
       </td>
@@ -118,19 +122,33 @@ export function SequenceRow({
         highlighted: { opacity: 1, backgroundColor: '#fcd742' },
       }}
     >
-      <td className='px-6 py-3 text-left'>{sequence.FBARCODE?.slice(-7)}</td>
-      <td className='px-4 py-3 text-left'>{sequence.FMODEL_BATTERY}</td>
-      <td className='px-4 py-3 font-mono text-sm text-left'>
+      <td className='px-1 md:px-6 py-2 md:py-3 text-left text-[10px] md:text-sm'>
+        {sequence.FBARCODE?.slice(-7)}
+      </td>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-left text-[10px] md:text-sm'>
+        {sequence.FMODEL_BATTERY}
+      </td>
+      <td className='px-1 md:px-4 py-2 md:py-3 font-mono text-[10px] md:text-sm text-left'>
         {sequence.FSEQ_K0}
       </td>
-      <td className='px-4 py-3 text-left'>{sequence.FBODY_NO_K0}</td>
-      <td className='px-4 py-3 font-mono text-sm text-left'>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-left text-[10px] md:text-sm'>
+        {sequence.FBODY_NO_K0}
+      </td>
+      <td className='px-1 md:px-4 py-2 md:py-3 font-mono text-[10px] md:text-sm text-left'>
         {sequence.FBARCODE}
       </td>
-      <td className='px-4 py-3 text-center'>{sequence.FALC_DATA}</td>
-      <td className='px-4 py-3 text-sm text-left'>{sequence.FTIME_RECEIVED}</td>
-      <td className='px-4 py-3 text-sm text-left'>{sequence.FTIME_PRINTED}</td>
-      <td className='px-4 py-3 text-left'>{getStatusBadge()}</td>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-center text-[10px] md:text-sm'>
+        {sequence.FALC_DATA}
+      </td>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-[10px] md:text-sm text-left'>
+        {sequence.FTIME_RECEIVED}
+      </td>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-[10px] md:text-sm text-left'>
+        {sequence.FTIME_PRINTED}
+      </td>
+      <td className='px-1 md:px-4 py-2 md:py-3 text-left'>
+        {getStatusBadge()}
+      </td>
       {getActions()}
     </motion.tr>
   )

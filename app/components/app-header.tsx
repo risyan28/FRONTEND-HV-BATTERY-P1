@@ -60,9 +60,9 @@ export function AppHeader({ title }: AppHeaderProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`sticky top-0 w-full py-2 text-white transition-all duration-700 ${scrolled ? 'shadow-lg' : ''} bg-gradient-to-r ${getGradient()}`}
+      className={`sticky top-0 w-full py-0.5 text-white transition-all duration-700 ${scrolled ? 'shadow-lg' : ''} bg-gradient-to-r ${getGradient()}`}
     >
-      <div className='flex items-center justify-between px-4 h-12 w-screen'>
+      <div className='flex items-center justify-between px-2 h-8 md:h-10 w-full'>
         {/* Logo kiri */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -73,7 +73,7 @@ export function AppHeader({ title }: AppHeaderProps) {
           <img
             src='/images/tmmin.png'
             alt='Toyota Logo'
-            className='h-16 w-auto object-contain'
+            className='h-7 md:h-12 w-auto object-contain'
           />
         </motion.div>
 
@@ -83,7 +83,7 @@ export function AppHeader({ title }: AppHeaderProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className='flex-1 text-center text-5xl font-bold'
+            className='flex-1 text-center text-sm md:text-4xl font-bold px-1 md:px-0'
           >
             {title}
           </motion.h1>
@@ -91,10 +91,12 @@ export function AppHeader({ title }: AppHeaderProps) {
 
         {/* Time & Date kanan */}
         <div className='flex flex-col items-end justify-center text-right flex-none'>
-          <span className='text-2xl font-mono font-bold'>
+          <span className='text-xs md:text-xl font-mono font-bold'>
             {formatTime(currentTime)}
           </span>
-          <span className='text-xl opacity-90'>{formatDate(currentTime)}</span>
+          <span className='text-[10px] md:text-base opacity-90'>
+            {formatDate(currentTime)}
+          </span>
         </div>
       </div>
     </motion.header>

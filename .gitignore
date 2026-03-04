@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-#Runtime
-frontend-runtime/
+# Runtime deploy folder — only ignore build output & deps, NOT source files
+frontend-runtime/build/
+frontend-runtime/node_modules/
 
 # Build outputs
 build/
@@ -11,17 +12,15 @@ dist/
 # Vite cache
 .vite/
 
+# PWA dev service worker output
+dev-dist/
+
 # React Router cache
 .react-router/
 
 # TypeScript
 tsconfig.build.json
 tsconfig.eslint.json
-
-# Environment variables
-.env.local
-.env.development
-.env.production
 
 # Logs
 logs
@@ -48,8 +47,9 @@ Thumbs.db
 *.tar.gz
 *.zip
 
-# Local env
-.env*
-
-# Text files
-*.txt
+# Local env — .env.example TETAP masuk GitHub (template, no secrets)
+.env
+.env.local
+.env.development
+.env.production
+.env.staging

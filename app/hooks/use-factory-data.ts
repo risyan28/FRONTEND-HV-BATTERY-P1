@@ -1,6 +1,6 @@
 // hooks/use-factory-data.ts
 import { useEffect, useState } from 'react'
-import { getSocket } from '@/lib/socket'
+import { getSocket, subscribeRoom, unsubscribeRoom } from '@/lib/socket'
 
 export type ActiveCall = {
   station: string
@@ -37,9 +37,9 @@ export function useFactoryData() {
 
   useEffect(() => {
     const socket = getSocket()
-
-    socket.emit('subscribe', 'calls')
-    socket.emit('subscribe', 'processes')
+    // subscribeRoom: daftar ke room + otomatis re-subscribe+sync saat reconnect
+    subscribeRoom('calls')
+    subscribeRoom('processes')
 
     // ✅ Handle calls dengan validasi
     const handleCallsUpdate = (rawData: any[]) => {
@@ -68,8 +68,8 @@ export function useFactoryData() {
     return () => {
       socket.off('calls:update', handleCallsUpdate)
       socket.off('processes:update', handleProcessesUpdate)
-      socket.emit('unsubscribe', 'calls')
-      socket.emit('unsubscribe', 'processes')
+      unsubscribeRoom('calls')
+      unsubscribeRoom('processes')
     }
   }, [])
 

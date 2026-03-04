@@ -1,3 +1,4 @@
+@import '@fontsource-variable/inter';
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -11,7 +12,7 @@
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  @apply bg-white dark:bg-gray-950 overflow-hidden;
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
@@ -135,9 +136,33 @@ body {
 }
 
 @keyframes blink {
-  0%, 100% { background-color: #00ff04; } /* green-600 */
-    50% { background-color: #008000; }      /* green-800 */
+  0%,
+  100% {
+    background-color: #00ff04;
+  } /* green-600 */
+  50% {
+    background-color: #008000;
+  } /* green-800 */
 }
 .animate-blink {
   animation: blink 1.5s infinite !important;
+}
+
+/* Prevent native date input picker UI from overlapping our custom icon
+   - hide native pickers for WebKit and Firefox
+   - normalize appearance and give extra right padding so custom icon fits
+*/
+input[type='date'] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  padding-right: 2.5rem !important;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+input[type='date']::-moz-calendar-picker-indicator {
+  display: none;
 }

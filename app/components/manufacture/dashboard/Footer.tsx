@@ -9,9 +9,9 @@ export function Footer() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.6 }}
-      className='w-full py-4 text-center text-sm text-gray-500'
+      className='w-full py-4 pb-20 md:pb-4 text-center text-xs md:text-sm text-gray-500'
     >
-      <p>
+      <p className='px-4'>
         ● {new Date().getFullYear()} HEV BATTERY P1 Dashboard ● Development by{' '}
         <a
           href='https://adaptive.co.id'

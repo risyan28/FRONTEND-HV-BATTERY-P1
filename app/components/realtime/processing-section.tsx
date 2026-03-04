@@ -3,21 +3,33 @@
 import { motion } from 'framer-motion'
 import { ArrowDown, Activity } from 'lucide-react'
 import type { Sequence } from '@/types/sequence'
+import { useEffect, useState } from 'react'
 
 interface ProcessingSectionProps {
   data: Sequence | null
 }
 
 export function CurrentlySequences({ data }: ProcessingSectionProps) {
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   if (!data) {
     return (
-      <div className='h-[200px] bg-card rounded-lg border border-border flex items-center justify-center shadow-sm mt-2'>
-        <div className='text-muted-foreground text-2xl flex items-center gap-3'>
-          <Activity className='w-8 h-8' />
-          <span className='hidden sm:inline'>
+      <div className='h-[90px] md:h-[150px] bg-card rounded-lg border border-border flex items-center justify-center shadow-sm flex-none'>
+        <div className='text-muted-foreground text-sm md:text-2xl flex items-center gap-2 md:gap-3'>
+          <Activity className='w-5 h-5 md:w-8 md:h-8' />
+          <span className='hidden md:inline'>
             No sequence currently processing
           </span>
-          <span className='sm:hidden'>No processing</span>
+          <span className='md:hidden'>No processing</span>
         </div>
       </div>
     )
@@ -36,16 +48,17 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
 
   // Lebar kolom dalam persen
   const columnWidths = ['10%', '10%', '10%', '10%', '25%', '25%', '10%']
+  const mobileColumnWidths = ['8%', '10%', '8%', '8%', '30%', '28%', '8%']
 
   return (
-    <div className='h-[210px] flex flex-col'>
+    <div className='h-[90px] md:h-[150px] flex flex-col flex-none'>
       {/* Arrow Indicator */}
       <motion.div
         className='flex justify-center'
-        animate={{ y: [0, 8, 0] }}
+        animate={{ y: [0, 4, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        <ArrowDown className='w-10 h-10 text-yellow-500' />
+        <ArrowDown className='w-4 h-4 md:w-6 md:h-6 text-yellow-500' />
       </motion.div>
 
       <motion.div
@@ -55,19 +68,25 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
         transition={{ duration: 0.5 }}
       >
         {/* Headers */}
-        <div className='flex bg-yellow-500 text-black font-bold text-xl'>
+        <div className='flex bg-yellow-500 text-black font-bold'>
           {headers.map((header, index) => (
             <div
               key={header}
               style={{
-                flexBasis: columnWidths[index],
+                flexBasis: isMobile
+                  ? mobileColumnWidths[index]
+                  : columnWidths[index],
                 flexGrow: 0,
                 flexShrink: 0,
               }}
-              className='p-2 text-center border-r border-yellow-600 last:border-r-0'
+              className={`p-0.5 md:p-2 text-center border-r border-yellow-600 last:border-r-0 flex items-center justify-center text-xs md:text-xl ${
+                header === 'DATA FROM' ? 'md:text-2xl' : ''
+              }`}
             >
-              <span className='hidden sm:inline'>{header}</span>
-              <span className='sm:hidden'>{mobileHeaders[index]}</span>
+              <span className='hidden md:inline'>{header}</span>
+              <span className='md:hidden text-[9px] leading-tight'>
+                {mobileHeaders[index]}
+              </span>
             </div>
           ))}
         </div>
@@ -85,44 +104,75 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
           transition={{ duration: 2, repeat: Infinity }}
         >
           <div
-            style={{ flexBasis: columnWidths[0], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[0] : columnWidths[0],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-bold text-xs md:text-2xl border-r border-yellow-500 last:border-r-0'
           >
             {data.FBARCODE?.slice(-7)}
           </div>
           <div
-            style={{ flexBasis: columnWidths[1], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[1] : columnWidths[1],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-bold text-[10px] md:text-2xl border-r border-yellow-500 last:border-r-0'
           >
-            <span className='hidden sm:inline'>{data.FMODEL_BATTERY}</span>
+            <span className='hidden md:inline'>{data.FMODEL_BATTERY}</span>
+            <span className='md:hidden'>
+              {data.FMODEL_BATTERY.split('-')[0]}
+            </span>
           </div>
           <div
-            style={{ flexBasis: columnWidths[2], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[2] : columnWidths[2],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-bold text-xs md:text-2xl border-r border-yellow-500 last:border-r-0'
           >
             {data.FSEQ_K0}
           </div>
           <div
-            style={{ flexBasis: columnWidths[3], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-bold text-2xl border-r border-yellow-500 last:border-r-0'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[3] : columnWidths[3],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-bold text-xs md:text-2xl border-r border-yellow-500 last:border-r-0'
           >
             {data.FBODY_NO_K0}
           </div>
           <div
-            style={{ flexBasis: columnWidths[4], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-mono text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[4] : columnWidths[4],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-mono text-[10px] md:text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
-            <span className='hidden lg:inline'>{data.FBARCODE}</span>
+            {data.FBARCODE}
           </div>
           <div
-            style={{ flexBasis: columnWidths[5], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-mono text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[5] : columnWidths[5],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-mono text-[10px] md:text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
-            <span className='hidden md:inline'>{data.FTIME_PRINTED}</span>
+            {data.FTIME_PRINTED}
           </div>
           <div
-            style={{ flexBasis: columnWidths[6], flexGrow: 0, flexShrink: 0 }}
-            className='p-5 text-center flex items-center justify-center font-mono text-xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
+            style={{
+              flexBasis: isMobile ? mobileColumnWidths[6] : columnWidths[6],
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
+            className='p-1 md:p-5 text-center flex items-center justify-center font-mono text-[10px] md:text-xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
             {data.FALC_DATA}
           </div>

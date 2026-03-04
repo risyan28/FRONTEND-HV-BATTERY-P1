@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { AppSidebar } from '@/components/app-sidebar'
 import { DashboardContent } from '@/components/dashboard-content'
 import { LoadingSkeleton } from '@/components/loading-skeleton'
+import { NotificationDemo } from '@/components/notification-demo'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -128,6 +129,11 @@ export function DashboardMaster() {
           <div
             className={`mx-auto px-6 py-6 ${sidebarCollapsed ? 'max-w-none' : 'max-w-[1600px]'}`}
           >
+            {/* Notification Demo - untuk testing PWA notification */}
+            <div className='mb-6'>
+              <NotificationDemo />
+            </div>
+
             {isLoading ? (
               <LoadingSkeleton />
             ) : (

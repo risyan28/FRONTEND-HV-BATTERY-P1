@@ -1,7 +1,8 @@
 // hooks/use-downtime-socket.ts
 import { useEffect, useState } from 'react'
-import { getSocket } from '@/lib/socket'
+import { getSocket, subscribeRoom, unsubscribeRoom } from '@/lib/socket'
 import type { DowntimeData } from '@/types/downtime'
+import logger from '@/lib/logger'
 
 export function useDowntimeListener() {
   const [downtimeMap, setDowntimeMap] = useState<
@@ -10,17 +11,17 @@ export function useDowntimeListener() {
 
   useEffect(() => {
     const socket = getSocket()
-
-    // Pastikan socket valid (jika getSocket bisa return null/undefined)
-    if (!socket) return
-
-    socket.emit('subscribe', 'downtime')
+    // subscribeRoom: daftar ke room + otomatis re-subscribe+sync saat reconnect
+    subscribeRoom('downtime')
 
     // ✅ Terima ARRAY dari server
     const handleUpdate = (payload: DowntimeData[]) => {
       // Validasi: pastikan payload adalah array
       if (!Array.isArray(payload)) {
-        console.warn('Expected array but got:', payload)
+        logger.warn('Expected array but got:', {
+          payload,
+          type: typeof payload,
+        })
         return
       }
 
@@ -37,7 +38,10 @@ export function useDowntimeListener() {
           ) {
             next[item.station] = { times: item.times, minutes: item.minutes }
           } else {
-            console.warn('Invalid downtime item:', item)
+            logger.warn('Invalid downtime item:', {
+              item,
+              validKeys: ['station', 'times', 'minutes'],
+            })
           }
         })
         return next
@@ -48,7 +52,7 @@ export function useDowntimeListener() {
 
     return () => {
       socket.off('downtime:update', handleUpdate)
-      socket.emit('unsubscribe', 'downtime')
+      unsubscribeRoom('downtime')
     }
   }, [])
 

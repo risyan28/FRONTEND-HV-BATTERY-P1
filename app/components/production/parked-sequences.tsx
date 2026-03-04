@@ -25,7 +25,7 @@ interface ParkedSequencesProps {
   parkedSequences: Sequence[]
   onInsert: (
     parkedIndex: number,
-    payload: { anchorId?: number; position?: 'beginning' | 'end' }
+    payload: { anchorId?: number; position?: 'beginning' | 'end' },
   ) => void
   onRemove: (index: number) => void
   queueSequences?: Sequence[]
@@ -39,7 +39,7 @@ export function ParkedSequences({
 }: ParkedSequencesProps) {
   const [showPositionDialog, setShowPositionDialog] = useState(false)
   const [selectedParkedIndex, setSelectedParkedIndex] = useState<number | null>(
-    null
+    null,
   )
   const [selectedAnchorId, setSelectedAnchorId] = useState<string>('')
 
@@ -71,13 +71,15 @@ export function ParkedSequences({
   return (
     <>
       <div className='flex-[2] rounded-md border border-gray-200 bg-white shadow-sm flex flex-col overflow-hidden'>
-        <div className='p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100'>
-          <h3 className='font-medium text-gray-900'>Parked Sequences</h3>
-          <p className='text-sm text-gray-500'>
+        <div className='p-3 md:p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100'>
+          <h3 className='text-sm md:text-base font-medium text-gray-900'>
+            Parked Sequences
+          </h3>
+          <p className='text-xs md:text-sm text-gray-500'>
             Sequences temporarily removed from queue
           </p>
         </div>
-        <div className='max-h-[calc(100vh-230px)] overflow-y-auto'>
+        <div className='max-h-[300px] md:max-h-[calc(100vh-230px)] overflow-y-auto'>
           <AnimatePresence>
             {parkedSequences.map((seq, index) => (
               <motion.div
@@ -85,53 +87,57 @@ export function ParkedSequences({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className='p-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200'
+                className='p-3 md:p-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200'
               >
                 {/* Seq & Model */}
                 <div className='flex justify-between'>
                   <div>
-                    <span className='text-md text-muted-foreground'>
+                    <span className='text-xs md:text-sm text-muted-foreground'>
                       No Seq:
                     </span>
-                    <span className='ml-1 font-mono font-semibold'>
+                    <span className='ml-1 text-xs md:text-sm font-mono font-semibold'>
                       {seq.FBARCODE?.slice(-7)}
                     </span>
                   </div>
                   <div>
-                    <span className='text-md text-muted-foreground'>Type:</span>
-                    <span className='ml-1 font-bold'>{seq.FMODEL_BATTERY}</span>
+                    <span className='text-xs md:text-sm text-muted-foreground'>
+                      Type:
+                    </span>
+                    <span className='ml-1 text-xs md:text-sm font-bold'>
+                      {seq.FMODEL_BATTERY}
+                    </span>
                   </div>
                 </div>
 
                 {/* Barcode */}
                 <div className='mt-2 flex justify-between'>
                   <div>
-                    <span className='text-md text-muted-foreground'>
+                    <span className='text-xs md:text-sm text-muted-foreground'>
                       Barcode:
                     </span>
-                    <span className='ml-1 font-mono text-md font-bold'>
+                    <span className='ml-1 font-mono text-xs md:text-sm font-bold'>
                       {seq.FBARCODE}
                     </span>
                   </div>
                 </div>
-                <div className='flex  mt-3 justify-center items-center gap-2'>
+                <div className='flex mt-3 justify-center items-center gap-2'>
                   <Button
                     variant='ghost'
                     onClick={() => handleInsertClick(index)}
-                    className='px-2 py-1 h-auto bg-black text-white hover:bg-black hover:text-white cursor-pointer text-md'
+                    className='px-2 py-1 h-auto bg-black text-white hover:bg-black hover:text-white cursor-pointer text-xs md:text-sm'
                     title='Insert to queue'
                   >
-                    <ArrowLeft className='h-4 w-4 mr-1 text-white' />
-                    INSERT SEQ
+                    <ArrowLeft className='h-3 w-3 md:h-4 md:w-4 mr-1 text-white' />
+                    INSERT
                   </Button>
                   <Button
-                    className='px-2 py-1 h-auto bg-red-500 text-white hover:bg-red-500 hover:text-white cursor-pointer text-md'
+                    className='px-2 py-1 h-auto bg-red-500 text-white hover:bg-red-500 hover:text-white cursor-pointer text-xs md:text-sm'
                     variant='ghost'
                     onClick={() => onRemove(index)}
                     title='Remove from parked'
                   >
-                    <X className='h-4 w-4 mr-1' />
-                    DELETE SEQ
+                    <X className='h-3 w-3 md:h-4 md:w-4 mr-1' />
+                    DELETE
                   </Button>
                 </div>
               </motion.div>

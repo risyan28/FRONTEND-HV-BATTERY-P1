@@ -4,7 +4,6 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import { AppHeader } from '@/components/app-header'
 import { motion } from 'framer-motion'
-import { AnimatePresence } from 'framer-motion'
 import { LoadingScreen } from '@/components/loading-screen'
 import { SequenceTable } from '@/components/realtime/sequence-table'
 import { CompletedSection } from '@/components/realtime/completed-section'
@@ -16,7 +15,6 @@ export function ProductionSequencePage(): React.ReactElement {
   const { sequences, connected } = useSequenceSocket()
 
   const [isLoading, setIsLoading] = useState(true)
-  const [key, setKey] = useState(Date.now())
 
   // Set loading to false after 1 second
   useEffect(() => {
@@ -48,17 +46,17 @@ export function ProductionSequencePage(): React.ReactElement {
   }
 
   return (
-    <div className='flex min-h-screen flex-col bg-zinc-100'>
+    <div className='flex h-screen flex-col bg-zinc-100 overflow-hidden'>
       {isLoading && <LoadingScreen />}
       {!isLoading && (
         <>
-           <div className='flex flex-1 flex-col w-full'>
+          <div className='flex flex-1 flex-col w-full min-h-0'>
             {/* Header Component */}
             <AppHeader title='SEQUENCE HV BATTERY' />
-            <div className='flex-1 flex flex-col p-2 gap-2 '>
-              {/* Top Section: 70:30 Split */}
+            <div className='flex-1 flex flex-col p-1 gap-1 min-h-0'>
+              {/* Top Section: 80:20 Split - Stack on mobile, side-by-side on desktop */}
               <motion.div
-                className='flex gap-6'
+                className='flex flex-col md:flex-row gap-1 flex-1 min-h-0'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -69,7 +67,7 @@ export function ProductionSequencePage(): React.ReactElement {
 
               {/* Bottom Section: Currently Processing */}
               <motion.div
-                className=''
+                className='flex-none'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
@@ -77,16 +75,6 @@ export function ProductionSequencePage(): React.ReactElement {
                 <CurrentlySequences data={sequences.current} />
               </motion.div>
             </div>
-            <AnimatePresence mode='wait'>
-              <motion.main
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className='flex-1'
-              ></motion.main>
-            </AnimatePresence>
           </div>
         </>
       )}

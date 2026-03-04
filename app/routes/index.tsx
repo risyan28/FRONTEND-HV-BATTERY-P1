@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { checkBackendConnection } from '@/lib/api'
-import { getSocket, closeSocket } from '@/lib/socket'
+import { getSocket } from '@/lib/socket'
 import { AlertCircle, WifiOff, Server, RefreshCw } from 'lucide-react'
+import logger from '@/lib/logger'
 
 type SystemStatus = {
   http: 'loading' | 'online' | 'offline'
@@ -12,7 +13,7 @@ type SystemStatus = {
 // 🔌 Helper: tunggu koneksi WebSocket dengan timeout
 function waitForSocketConnection(
   socket: any,
-  timeoutMs = 3000
+  timeoutMs = 3000,
 ): Promise<boolean> {
   return new Promise((resolve) => {
     if (socket.connected) {
@@ -66,7 +67,7 @@ export default function Index() {
         const socket = getSocket() // ← init & connect (singleton)
         isWsOnline = await waitForSocketConnection(socket, 3000)
       } catch (err) {
-        console.error('WebSocket check failed:', err)
+        logger.error('WebSocket check failed', { error: err })
         isWsOnline = false
       }
     }
@@ -78,10 +79,8 @@ export default function Index() {
     }
     setStatus(newStatus)
 
-    // Tutup koneksi global jika salah satu gagal
-    if (!isHttpOnline || !isWsOnline) {
-      closeSocket()
-    }
+    // Jangan tutup socket saat gagal — biarkan built-in reconnection logic bekerja.
+    // closeSocket() hanya dipakai saat user logout / app unmount.
 
     // Redirect hanya jika keduanya online
     if (isHttpOnline && isWsOnline) {

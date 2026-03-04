@@ -46,22 +46,22 @@ export function ProductionPlanPage() {
   }
 
   return (
-    <div className='max-w-8xl mx-auto w-full px-2 py-4 sm:px-4 sm:py-6 lg:px-4'>
+    <div className='max-w-8xl mx-auto w-full px-2 py-2 sm:px-4 sm:py-4 lg:px-4 pb-24 md:pb-4'>
       <PageHeader isLoading={loading} title='Production Sequence Control' />
 
       {/* Main Content Area */}
       {loading ? (
-        <div className='flex-1 px-4 sm:px-6 lg:px-8'>
+        <div className='flex-1 px-2 sm:px-6 lg:px-8'>
           <div className='h-full rounded-xl bg-gray-200 animate-pulse' />
         </div>
       ) : (
-        <div className='flex-1 flex gap-2 px-2 sm:px-4 lg:px-0 pb-4 overflow-hidden'>
-          {/* Active Queue - 80% */}
+        <div className='flex-1 flex flex-col md:flex-row gap-2 md:gap-2 px-2 sm:px-4 lg:px-0 pb-4 overflow-hidden'>
+          {/* Active Queue - Full width mobile, 80% desktop */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className='flex-8 rounded-md border border-gray-100 bg-white/80 p-4 shadow-sm'
+            className='w-full md:flex-8 rounded-md border border-gray-100 bg-white/80 p-2 md:p-4 shadow-sm'
           >
             <SequenceTable
               sequences={
@@ -80,11 +80,12 @@ export function ProductionPlanPage() {
             />
           </motion.div>
 
-          {/* Parked Sequences - 20% */}
+          {/* Parked Sequences - Full width mobile, 20% desktop */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
+            className='w-full md:w-auto'
           >
             <ParkedSequences
               parkedSequences={sequences?.parked ?? []}
