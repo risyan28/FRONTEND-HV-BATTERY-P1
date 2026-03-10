@@ -17,6 +17,7 @@ interface HistoryPrintLabelProps {
   setDateRange: (range: { from: string; to: string }) => void
   searchByDate: () => Promise<void>
   handleRePrint: (item: PrintHistory) => void
+  enableExcelDownload?: boolean
 }
 
 export function HistoryPrintLabel({
@@ -28,6 +29,7 @@ export function HistoryPrintLabel({
   setDateRange,
   searchByDate,
   handleRePrint,
+  enableExcelDownload = true,
 }: HistoryPrintLabelProps) {
   const columns: ColumnDef<PrintHistory>[] = useMemo(
     () => [
@@ -121,6 +123,8 @@ export function HistoryPrintLabel({
       setDateRange={setDateRange}
       onSearch={searchByDate}
       globalFilterPlaceholder='Search by Battery Pack ID, Shift...'
+      enableExcelDownload={enableExcelDownload}
+      excelFileName='history-print'
     />
   )
 }

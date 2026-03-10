@@ -32,6 +32,7 @@ export function TraceabilityDataTable({
   dateRange,
   setDateRange,
   searchByDate,
+  enableExcelDownload = true,
 }: {
   data: TraceabilityData[]
   filteredData: TraceabilityData[]
@@ -40,6 +41,7 @@ export function TraceabilityDataTable({
   dateRange: { from: string; to: string }
   setDateRange: (range: { from: string; to: string }) => void
   searchByDate: () => Promise<void>
+  enableExcelDownload?: boolean
 }) {
   // Generate columns dynamically from first data item
   const columns: ColumnDef<TraceabilityData>[] = useMemo(() => {
@@ -177,6 +179,21 @@ export function TraceabilityDataTable({
             )
           }
 
+          // Format PROD_DATE as date only (take first 10 chars: YYYY-MM-DD)
+          if (key === 'PROD_DATE') {
+            if (!value)
+              return (
+                <div className='text-sm whitespace-nowrap text-gray-700'>-</div>
+              )
+            const raw = String(value)
+            const dateOnly = raw.length >= 10 ? raw.substring(0, 10) : raw
+            return (
+              <div className='text-sm whitespace-nowrap text-blue-700 font-medium'>
+                {dateOnly}
+              </div>
+            )
+          }
+
           const formatted = formatDateTime(value)
 
           // Render badge untuk OK/NG/NotOK/- di kolom manapun
@@ -227,6 +244,8 @@ export function TraceabilityDataTable({
       setDateRange={setDateRange}
       onSearch={searchByDate}
       globalFilterPlaceholder='Search all columns...'
+      enableExcelDownload={enableExcelDownload}
+      excelFileName='traceability-data'
     />
   )
 }

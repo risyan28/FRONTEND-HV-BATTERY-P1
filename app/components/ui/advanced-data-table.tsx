@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useRef } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Search, Calendar } from 'lucide-react'
+import { Search, Calendar, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import * as XLSX from 'xlsx'
 import {
   useReactTable,
   getCoreRowModel,
@@ -23,6 +24,8 @@ interface AdvancedDataTableProps<TData> {
   setDateRange?: (range: { from: string; to: string }) => void
   onSearch?: () => Promise<void>
   globalFilterPlaceholder?: string
+  enableExcelDownload?: boolean
+  excelFileName?: string
 }
 
 export function AdvancedDataTable<TData>({
@@ -35,10 +38,43 @@ export function AdvancedDataTable<TData>({
   setDateRange,
   onSearch,
   globalFilterPlaceholder = 'Search...',
+  enableExcelDownload = false,
+  excelFileName = 'data',
 }: AdvancedDataTableProps<TData>) {
   const [globalFilter, setGlobalFilter] = useState('')
   const fromDateRef = useRef<HTMLInputElement>(null)
   const toDateRef = useRef<HTMLInputElement>(null)
+
+  const handleDownloadExcel = () => {
+    const filteredRows = table.getFilteredRowModel().rows
+    const headers = columns
+      .filter((col) => 'accessorKey' in col && col.accessorKey)
+      .map((col) => (col as any).accessorKey as string)
+
+    const sheetData = [
+      headers,
+      ...filteredRows.map((row) =>
+        headers.map((key) => {
+          const val = (row.original as any)[key]
+          return val ?? ''
+        }),
+      ),
+    ]
+
+    const now = new Date()
+    const yyyy = now.getFullYear()
+    const MM = String(now.getMonth() + 1).padStart(2, '0')
+    const dd = String(now.getDate()).padStart(2, '0')
+    const hh = String(now.getHours()).padStart(2, '0')
+    const mm = String(now.getMinutes()).padStart(2, '0')
+    const ss = String(now.getSeconds()).padStart(2, '0')
+    const timestamp = `${yyyy}-${MM}-${dd}_${hh}-${mm}-${ss}`
+
+    const worksheet = XLSX.utils.aoa_to_sheet(sheetData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
+    XLSX.writeFile(workbook, `${excelFileName}_${timestamp}.xlsx`)
+  }
 
   const table = useReactTable({
     data,
@@ -145,8 +181,20 @@ export function AdvancedDataTable<TData>({
           </div>
         )}
 
-        {/* Search Box - Aligned to the right */}
-        <div className='flex justify-end'>
+        {/* Search Box & Download - Aligned to the right */}
+        <div className='flex justify-end gap-2'>
+          {enableExcelDownload && (
+            <Button
+              size='sm'
+              variant='outline'
+              onClick={handleDownloadExcel}
+              disabled={table.getFilteredRowModel().rows.length === 0}
+              className='h-10 px-4 border-2 border-green-500 text-green-700 hover:bg-green-50 hover:border-green-600 font-semibold transition-all flex items-center gap-2'
+            >
+              <Download className='h-4 w-4' />
+              Download Excel
+            </Button>
+          )}
           <div className='relative w-80'>
             <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
             <input
