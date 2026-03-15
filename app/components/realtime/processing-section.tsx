@@ -174,7 +174,7 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
             }}
             className='p-1 md:p-5 text-center flex items-center justify-center font-mono text-[10px] md:text-xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
-            {data.FALC_DATA}
+            {data.ORDER_TYPE ?? '-'}
           </div>
         </motion.div>
       </motion.div>

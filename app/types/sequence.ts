@@ -5,6 +5,7 @@ export interface Sequence {
   FSEQ_NO: number
   FTYPE_BATTERY: string
   FMODEL_BATTERY: string
+  ORDER_TYPE?: string | null
   FSEQ_DATE: string // ISO string (karena dari DateTime Prisma → JSON)
   FSTATUS: number | null
   FBARCODE?: string | null

@@ -29,6 +29,7 @@ interface ParkedSequencesProps {
   ) => void
   onRemove: (index: number) => void
   queueSequences?: Sequence[]
+  className?: string
 }
 
 export function ParkedSequences({
@@ -36,6 +37,7 @@ export function ParkedSequences({
   onInsert,
   onRemove,
   queueSequences = [],
+  className,
 }: ParkedSequencesProps) {
   const [showPositionDialog, setShowPositionDialog] = useState(false)
   const [selectedParkedIndex, setSelectedParkedIndex] = useState<number | null>(
@@ -70,7 +72,9 @@ export function ParkedSequences({
 
   return (
     <>
-      <div className='flex-[2] rounded-md border border-gray-200 bg-white shadow-sm flex flex-col overflow-hidden'>
+      <div
+        className={`flex-[2] rounded-md border border-gray-200 bg-white shadow-sm flex flex-col overflow-hidden h-full ${className ?? ''}`}
+      >
         <div className='p-3 md:p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100'>
           <h3 className='text-sm md:text-base font-medium text-gray-900'>
             Parked Sequences
@@ -79,7 +83,7 @@ export function ParkedSequences({
             Sequences temporarily removed from queue
           </p>
         </div>
-        <div className='max-h-[300px] md:max-h-[calc(100vh-230px)] overflow-y-auto'>
+        <div className='flex-1 min-h-[280px] md:min-h-[420px] overflow-y-auto'>
           <AnimatePresence>
             {parkedSequences.map((seq, index) => (
               <motion.div

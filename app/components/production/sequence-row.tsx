@@ -10,11 +10,12 @@ interface SequenceRowProps {
   sequence: Sequence
   type: 'completed' | 'current' | 'queue'
   index?: number
-  onMoveUp?: (index: number) => void
-  onMoveDown?: (index: number) => void
-  onPark?: (index: number) => void
+  onMoveUp?: (sequenceId: number) => void
+  onMoveDown?: (sequenceId: number) => void
+  onPark?: (sequenceId: number) => void
   highlightedId?: number | null
   queueLength?: number
+  disableManualReorder?: boolean
 }
 
 export function SequenceRow({
@@ -26,6 +27,7 @@ export function SequenceRow({
   onPark,
   highlightedId,
   queueLength = 0,
+  disableManualReorder = false,
 }: SequenceRowProps) {
   const getRowStyle = () => {
     switch (type) {
@@ -83,8 +85,8 @@ export function SequenceRow({
           <Button
             size='sm'
             variant='ghost'
-            onClick={() => onMoveDown?.(index)}
-            disabled={index === queueLength - 1}
+            onClick={() => onMoveDown?.(sequence.FID)}
+            disabled={disableManualReorder || index === queueLength - 1}
             className='h-6 w-6 md:h-8 md:w-8 p-0'
           >
             <ArrowUp className='h-3 w-3 md:h-4 md:w-4' />
@@ -92,8 +94,8 @@ export function SequenceRow({
           <Button
             size='sm'
             variant='ghost'
-            onClick={() => onMoveUp?.(index)}
-            disabled={index === 0}
+            onClick={() => onMoveUp?.(sequence.FID)}
+            disabled={disableManualReorder || index === 0}
             className='h-6 w-6 md:h-8 md:w-8 p-0'
           >
             <ArrowDown className='h-3 w-3 md:h-4 md:w-4' />
@@ -101,7 +103,7 @@ export function SequenceRow({
           <Button
             size='sm'
             variant='ghost'
-            onClick={() => onPark?.(index)}
+            onClick={() => onPark?.(sequence.FID)}
             className='h-6 w-6 md:h-8 md:w-8 p-0'
           >
             <MoveRight className='h-3 w-3 md:h-4 md:w-4' />
@@ -138,7 +140,7 @@ export function SequenceRow({
         {sequence.FBARCODE}
       </td>
       <td className='px-1 md:px-4 py-2 md:py-3 text-center text-[10px] md:text-sm'>
-        {sequence.FALC_DATA}
+        {sequence.ORDER_TYPE ?? '-'}
       </td>
       <td className='px-1 md:px-4 py-2 md:py-3 text-[10px] md:text-sm text-left'>
         {sequence.FTIME_RECEIVED}

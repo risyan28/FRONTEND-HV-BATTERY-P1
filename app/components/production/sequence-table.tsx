@@ -11,11 +11,15 @@ import { useEffect, useRef, memo } from 'react'
 
 interface SequenceTableProps {
   sequences: SequenceState
-  onMoveUp: (index: number) => void
-  onMoveDown: (index: number) => void
-  onPark: (index: number) => void
+  onMoveUp: (sequenceId: number) => void
+  onMoveDown: (sequenceId: number) => void
+  onPark: (sequenceId: number) => void
   highlightedId: number | null
-  AddManualSeq: () => void
+  AddManualSeq: (
+    orderType: 'ASSY' | 'CKD' | 'SERVICE PART',
+    qty: number,
+  ) => void
+  strategyMode?: 'normal' | 'priority' | 'ratio'
 }
 
 export const SequenceTable = memo(function SequenceTable({
@@ -25,15 +29,23 @@ export const SequenceTable = memo(function SequenceTable({
   onPark,
   highlightedId,
   AddManualSeq,
+  strategyMode = 'normal',
 }: SequenceTableProps) {
   const { current, queue, completed } = sequences
   const queueRef = useRef<HTMLDivElement | null>(null)
+  const historyRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (queueRef.current) {
+      // Keep queue pinned at the bottom so the row nearest current RUNNING is visible.
       queueRef.current.scrollTop = queueRef.current.scrollHeight
     }
-  }, [queue])
+
+    if (historyRef.current) {
+      // Keep history pinned at top.
+      historyRef.current.scrollTop = 0
+    }
+  }, [queue, completed])
 
   return (
     <div className='text-xs md:text-sm'>
@@ -54,22 +66,20 @@ export const SequenceTable = memo(function SequenceTable({
             <table className='w-full table-fixed'>
               <SequenceTableColumns />
               <tbody>
-                {[...queue]
-                  .sort((a, b) => a.FID_ADJUST - b.FID_ADJUST)
-                  .map((seq, index) => (
-                    <SequenceRow
-                      key={`queue-${seq.FID}`}
-                      sequence={seq}
-                      type='queue'
-                      index={index}
-                      onMoveUp={onMoveUp}
-                      onMoveDown={onMoveDown}
-                      onPark={onPark}
-                      queueLength={queue.length}
-                      highlightedId={highlightedId === seq.FID ? seq.FID : null}
-                    />
-                  ))
-                  .reverse()}
+                {[...queue].reverse().map((seq, index) => (
+                  <SequenceRow
+                    key={`queue-${seq.FID}`}
+                    sequence={seq}
+                    type='queue'
+                    index={index}
+                    onMoveUp={onMoveUp}
+                    onMoveDown={onMoveDown}
+                    onPark={onPark}
+                    queueLength={queue.length}
+                    highlightedId={highlightedId === seq.FID ? seq.FID : null}
+                    disableManualReorder={strategyMode !== 'normal'}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
@@ -89,7 +99,10 @@ export const SequenceTable = memo(function SequenceTable({
           </table>
 
           {/* Completed Section */}
-          <div className='h-[200px] md:h-[300px] overflow-y-auto'>
+          <div
+            ref={historyRef}
+            className='h-[200px] md:h-[300px] overflow-y-auto'
+          >
             <table className='w-full table-fixed'>
               <SequenceTableColumns />
               <tbody>

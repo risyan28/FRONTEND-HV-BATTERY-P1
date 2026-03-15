@@ -8,6 +8,10 @@ export default [
     'routes/dashboard-user/manufacture/production-plan.tsx',
   ),
   route(
+    '/dashboard-user/manufacture/production-control',
+    'routes/dashboard-user/manufacture/production-control.tsx',
+  ),
+  route(
     '/dashboard-user/manufacture/my-profile',
     'routes/dashboard-user/manufacture/my-profile.tsx',
   ),
@@ -27,5 +31,9 @@ export default [
   route(
     '/dashboard-user/manufacture/traceability-data',
     'routes/dashboard-user/manufacture/traceability-data.tsx',
+  ),
+  route(
+    '/dashboard-user/manufacture/man-bracket',
+    'routes/dashboard-user/manufacture/man-bracket.tsx',
   ),
 ] satisfies RouteConfig

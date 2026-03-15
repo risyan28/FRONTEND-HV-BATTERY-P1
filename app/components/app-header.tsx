@@ -5,9 +5,10 @@ import { motion } from 'framer-motion'
 
 type AppHeaderProps = {
   title?: string
+  className?: string
 }
 
-export function AppHeader({ title }: AppHeaderProps) {
+export function AppHeader({ title, className }: AppHeaderProps) {
   const [scrolled, setScrolled] = useState(false)
   const [scrollPosition, setScrollPosition] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -62,7 +63,9 @@ export function AppHeader({ title }: AppHeaderProps) {
       transition={{ duration: 0.5 }}
       className={`sticky top-0 w-full py-0.5 text-white transition-all duration-700 ${scrolled ? 'shadow-lg' : ''} bg-gradient-to-r ${getGradient()}`}
     >
-      <div className='flex items-center justify-between px-2 h-8 md:h-10 w-full'>
+      <div
+        className={`flex items-center justify-between px-2 h-8 md:h-10 w-full ${className ?? ''}`}
+      >
         {/* Logo kiri */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -102,3 +105,4 @@ export function AppHeader({ title }: AppHeaderProps) {
     </motion.header>
   )
 }
+

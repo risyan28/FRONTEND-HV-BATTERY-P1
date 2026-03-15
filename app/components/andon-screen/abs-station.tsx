@@ -36,9 +36,9 @@ export function AbsBox({
   // Hitung skala berdasarkan panjang teks
   const getScale = (text: string) => {
     const len = text.length
-    if (len <= 8) return 1.1
-    if (len <= 12) return 1.2
-    if (len <= 16) return 1.3
+    if (len <= 8) return 1.25
+    if (len <= 12) return 1.30
+    if (len <= 16) return 1.35
     return 0.7
   }
 

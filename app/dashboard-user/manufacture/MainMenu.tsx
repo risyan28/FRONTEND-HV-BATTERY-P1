@@ -10,7 +10,7 @@ export function MainMenu() {
   const { downtimeData } = useDowntimeListener()
 
   return (
-    <div className='container mx-auto px-4 py-4'>
+    <div className='container mx-auto px-4 py-2'>
       <RealtimeStats
         target={dataSummary.Target}
         plan={dataSummary.Plan}

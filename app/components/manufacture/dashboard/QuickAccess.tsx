@@ -6,13 +6,13 @@ export function QuickAccess() {
   const menuItems = useMenuItems()
 
   return (
-    <div className='container mx-auto mb-6 px-4'>
-      <div className='mb-4 flex items-center justify-between'>
+    <div className='mb-4 px-4'>
+      <div className='mb-3 flex items-center justify-between'>
         <h2 className='text-xl font-bold'>Menu</h2>
       </div>
 
       {/* Responsive Grid: 2 cols mobile, 3 cols tablet, 6 cols desktop */}
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-6'>
+      <div className='grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-3 lg:grid-cols-4'>
         {menuItems.map((item, index) => (
           <motion.div
             key={index}
@@ -22,18 +22,18 @@ export function QuickAccess() {
           >
             <Link
               to={item.href}
-              className='group flex h-full flex-col items-center justify-center rounded-lg bg-white p-4 shadow-sm hover:bg-purple-100 active:bg-purple-200 min-h-[160px] sm:min-h-[180px] lg:min-h-[200px]'
+              className='group flex h-full min-h-[clamp(7.5rem,18vh,12.5rem)] flex-col items-center justify-center rounded-lg bg-white p-3 shadow-sm hover:bg-purple-100 active:bg-purple-200'
             >
               {/* Icon Container - Responsive Size */}
-              <div className='mb-3 flex aspect-square w-28 sm:w-32 md:w-36 lg:w-40 items-center justify-center rounded-full bg-purple-100'>
+              <div className='mb-2 flex aspect-square w-[clamp(7.5rem,12vh,14rem)] items-center justify-center rounded-full bg-purple-100 ring-10 ring-purple-100/90'>
                 {typeof item.icon === 'string' ? (
                   <img
                     src={item.icon}
                     alt={item.label}
-                    className='h-[85%] w-[85%] object-contain'
+                    className='h-[100%] w-[100%] object-contain'
                   />
                 ) : (
-                  <item.icon className='h-10 w-10 md:h-12 md:w-12' />
+                  <item.icon className='h-12 w-12 md:h-14 md:w-14' />
                 )}
               </div>
 

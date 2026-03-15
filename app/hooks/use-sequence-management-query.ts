@@ -187,13 +187,18 @@ export function useSequenceManagementQuery() {
     [sequences.parked, showConfirmDialog, removeParkedMutation],
   )
 
-  const onAddManualSeq = useCallback(() => {
-    logger.info('Adding manual sequence')
-    createSequenceMutation.mutate({
-      FTYPE_BATTERY: 'E',
-      FMODEL_BATTERY: 'LI-688D',
-    })
-  }, [createSequenceMutation])
+  const onAddManualSeq = useCallback(
+    (orderType: 'ASSY' | 'CKD' | 'SERVICE PART', qty: number) => {
+      logger.info('Adding manual sequence', { orderType, qty })
+      createSequenceMutation.mutate({
+        FTYPE_BATTERY: 'E',
+        FMODEL_BATTERY: 'LI-688D',
+        ORDER_TYPE: orderType,
+        QTY: qty,
+      })
+    },
+    [createSequenceMutation],
+  )
 
   return {
     sequences,

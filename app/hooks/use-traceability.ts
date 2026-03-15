@@ -50,7 +50,10 @@ export const useTraceability = (): UseTraceabilityResult => {
       logger.info('Traceability data loaded', { count: result.length })
     } catch (err) {
       // ✅ Use centralized error handler
-      const errorResult = handleError(err, { operation: 'fetchAll', from, to })
+      const errorResult = handleError(err, {
+        operation: 'fetchAll',
+        metadata: { from, to },
+      })
       setError(errorResult.userMessage)
       setData([])
       setFilteredData([])
@@ -83,8 +86,7 @@ export const useTraceability = (): UseTraceabilityResult => {
       // ✅ Use centralized error handler
       const errorResult = handleError(err, {
         operation: 'searchByDate',
-        from,
-        to,
+        metadata: { from, to },
       })
       setError(errorResult.userMessage)
       setData([])

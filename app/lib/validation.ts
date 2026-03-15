@@ -12,6 +12,7 @@ export const SequenceSchema = z.object({
   FSEQ_NO: z.number(),
   FTYPE_BATTERY: z.string(),
   FMODEL_BATTERY: z.string(),
+  ORDER_TYPE: z.string().nullable().optional(),
   FSEQ_DATE: z.string(), // Accept any date string format from backend
   FSTATUS: z.number().nullable(),
   FBARCODE: z.string().nullable().optional(),
@@ -34,6 +35,8 @@ export const SequenceStateSchema = z.object({
 export const CreateSequenceSchema = z.object({
   FTYPE_BATTERY: z.string().min(1, 'Battery type is required'),
   FMODEL_BATTERY: z.string().min(1, 'Battery model is required'),
+  ORDER_TYPE: z.enum(['ASSY', 'CKD', 'SERVICE PART']),
+  QTY: z.number().int().min(1).max(200),
 })
 
 export const UpdateSequenceSchema = SequenceSchema.partial()
@@ -91,6 +94,7 @@ export const PrintHistoryResponseSchema = z.array(PrintHistorySchema)
 export const ReprintRequestSchema = z.object({
   id: z.number().positive('Invalid print history ID'),
   reason: z.string().min(5, 'Reason must be at least 5 characters').optional(),
+  modelBattery: z.string().optional(),
 })
 
 // ==================== AUTH SCHEMAS ====================
@@ -174,11 +178,11 @@ export function safeParse<T>(
 /**
  * Validate or throw error
  */
-export function validate<T>(
-  schema: z.ZodSchema<T>,
+export function validate<T extends z.ZodTypeAny>(
+  schema: T,
   data: unknown,
   context?: string,
-): T {
+): z.output<T> {
   try {
     return schema.parse(data)
   } catch (error) {

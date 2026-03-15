@@ -116,7 +116,7 @@ export function AndonScreen() {
               {/* Middle Section - Factory Layout (Left) + Downtime & Info (Right) */}
               <div className='flex-1 flex flex-row p-1 gap-2 min-h-0'>
                 <motion.div
-                  className='flex-[7.5] rounded-md'
+                  className='flex-[7] rounded-md'
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
@@ -129,7 +129,7 @@ export function AndonScreen() {
                     isLandscape={true}
                   />
 
-                  <footer className='p-1 flex-none mt-26'>
+                  <footer className='p-1 flex-none mt-12'>
                     <SummaryBar
                       target={dataSummary.Target}
                       plan={dataSummary.Plan}
@@ -141,7 +141,7 @@ export function AndonScreen() {
                 </motion.div>
 
                 <motion.div
-                  className='flex-[2.5] flex flex-col gap-2 min-h-0 overflow-hidden'
+                  className='flex-[3] flex flex-col gap-2 min-h-0 overflow-hidden'
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}

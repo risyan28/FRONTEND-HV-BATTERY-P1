@@ -6,7 +6,7 @@ import {
   DEFAULT_BOX_WIDTH,
   FontSize,
 } from './abs-station'
-import { type FC } from 'react'
+import { type FC, useRef, useState, useEffect } from 'react'
 
 const SPACING = 5
 
@@ -130,6 +130,9 @@ const getStationState = (
   }
 }
 
+const LANDSCAPE_DESIGN_WIDTH = 1200
+const LANDSCAPE_DESIGN_HEIGHT = 550
+
 export const FactoryLayout: FC<Props> = ({
   act_assy,
   act_ckd,
@@ -137,6 +140,32 @@ export const FactoryLayout: FC<Props> = ({
   processStatuses,
   isLandscape = false,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+
+  // Remap backend station names → UI label names
+  const STATION_REMAP: Record<string, string> = {
+    'UN LOADING': 'MODULE INSPECT',
+    'STACK LOADING': 'MODULE INSPECT',
+    CHARGING: 'INSPECT',
+  }
+  const mappedActiveCalls = activeCalls.map((c) => ({
+    ...c,
+    station: STATION_REMAP[c.station.trim().toUpperCase()] ?? c.station,
+  }))
+
+  useEffect(() => {
+    if (!isLandscape) return
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width
+      if (w > 0) setScale(Math.min(1, w / LANDSCAPE_DESIGN_WIDTH))
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isLandscape])
+
   const getIconSrc = (callType: 'LEADER' | 'MTN' | null): string | null => {
     if (!callType) return null
     if (callType === 'LEADER') return '/images/leader.png'
@@ -158,7 +187,7 @@ export const FactoryLayout: FC<Props> = ({
       'MANUAL ASSY 1',
       undefined,
       undefined,
-      'UN LOADING',
+      'MODULE INSPECT',
     ]
 
     // Bottom row stations (kiri ke kanan)
@@ -180,8 +209,27 @@ export const FactoryLayout: FC<Props> = ({
     const spacing = SPACING
 
     return (
-      <div>
-        <div className='relative mx-auto mt-25' style={{ width: 1200, height: 400 }}>
+      <div
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: LANDSCAPE_DESIGN_HEIGHT * scale,
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: LANDSCAPE_DESIGN_WIDTH,
+            height: LANDSCAPE_DESIGN_HEIGHT,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            marginTop: 90,
+          }}
+        >
           {/* Transfer lines - U shape */}
           {/* Vertical line kiri */}
           <div
@@ -204,7 +252,7 @@ export const FactoryLayout: FC<Props> = ({
             const x = 20 + i * (boxWidth + spacing)
             const y = 10
             const state = label
-              ? getStationState(label, activeCalls, processStatuses)
+              ? getStationState(label, mappedActiveCalls, processStatuses)
               : { bgColor: '#00ff04', callType: null, isBlinking: false }
 
             return (
@@ -236,7 +284,7 @@ export const FactoryLayout: FC<Props> = ({
             const x = 30 + i * (boxWidth + spacing) + boxWidth
             const y = 300
             const state = label
-              ? getStationState(label, activeCalls, processStatuses)
+              ? getStationState(label, mappedActiveCalls, processStatuses)
               : { bgColor: '#00ff04', callType: null, isBlinking: false }
 
             return (
@@ -269,7 +317,7 @@ export const FactoryLayout: FC<Props> = ({
             y={90}
             w={150}
             h={80}
-            className='flex items-center justify-center font-bold text-2xl px-2 py-2'
+            className='flex items-center justify-center font-bold text-3xl px-2 py-2'
           >
             <div className='flex flex-col items-center'>
               <span>ASSY</span>
@@ -281,7 +329,7 @@ export const FactoryLayout: FC<Props> = ({
             y={185}
             w={150}
             h={80}
-            className='flex items-center justify-center font-bold text-2xl px-2 py-2'
+            className='flex items-center justify-center font-bold text-3xl px-2 py-2'
           >
             <div className='flex flex-col items-center'>
               <span>CKD</span>
@@ -313,7 +361,7 @@ export const FactoryLayout: FC<Props> = ({
   for (let i = 0; i < leftLabels.length; i++) {
     const label = leftLabels[i]
     const state = label
-      ? getStationState(label, activeCalls, processStatuses)
+      ? getStationState(label, mappedActiveCalls, processStatuses)
       : { bgColor: '#00ff04', callType: null, isBlinking: false }
     leftBoxes.push({
       y: currentYLeft,
@@ -337,13 +385,13 @@ export const FactoryLayout: FC<Props> = ({
     undefined,
     undefined,
     undefined,
-    'UN LOADING',
+    'MODULE INSPECT',
   ]
 
   for (let i = 0; i < rightLabels.length; i++) {
     const label = rightLabels[i]
     const state = label
-      ? getStationState(label, activeCalls, processStatuses)
+      ? getStationState(label, mappedActiveCalls, processStatuses)
       : { bgColor: '#00ff04', callType: null, isBlinking: false }
     rightBoxes.push({
       y: currentY,

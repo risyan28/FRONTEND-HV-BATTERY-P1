@@ -222,7 +222,7 @@ export function SequenceTable({ data }: SequenceTableProps) {
                       className='min-w-0 p-0.5 md:p-2 text-center 
                              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-[9px] md:text-lg'
                     >
-                      {row.FALC_DATA}
+                      {row.ORDER_TYPE ?? '-'}
                     </div>
                   </motion.div>
                 ))}

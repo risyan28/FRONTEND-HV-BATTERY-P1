@@ -12,7 +12,7 @@ export function DowntimePanel({
 }: DowntimePanelProps) {
   // Daftar station sesuai mode
   const portraitCols = [
-    'UNLOADING',
+    'MOD INSPECT',
     'MAN ASSY 1',
     'MAN ASSY 2',
     'MAN ASSY 3',
@@ -21,7 +21,7 @@ export function DowntimePanel({
   ]
 
   const landscapeCols = [
-    'UN LOADING',
+    'MODULE INSPECT',
     'MANUAL ASSY 1',
     'MANUAL ASSY 2',
     'MANUAL ASSY 3',
@@ -33,7 +33,7 @@ export function DowntimePanel({
 
   // Mapping: nama di DB → nama di UI (berbeda per mode)
   const portraitDB_TO_UI: Record<string, string> = {
-    'STACK LOADING': 'UNLOADING',
+    'STACK LOADING': 'MODULE INSPECT',
     'MANUAL ASSY 1': 'MAN ASSY 1',
     'MANUAL ASSY 2': 'MAN ASSY 2',
     'MANUAL ASSY 3': 'MAN ASSY 3',
@@ -42,7 +42,7 @@ export function DowntimePanel({
   }
 
   const landscapeDB_TO_UI: Record<string, string> = {
-    'STACK LOADING': 'UN LOADING',
+    'STACK LOADING': 'MODULE INSPECT',
     'MANUAL ASSY 1': 'MANUAL ASSY 1',
     'MANUAL ASSY 2': 'MANUAL ASSY 2',
     'MANUAL ASSY 3': 'MANUAL ASSY 3',
@@ -85,7 +85,7 @@ export function DowntimePanel({
           isLandscape ? (
             <div
               key={i}
-              className='border-3 border-(--color-line-black) flex items-center justify-center p-1 text-center text-md font-bold uppercase leading-tight'
+              className='border-3 border-(--color-line-black) flex items-center justify-center p-1 text-center text-lg font-bold uppercase leading-tight'
             >
               {c}
             </div>

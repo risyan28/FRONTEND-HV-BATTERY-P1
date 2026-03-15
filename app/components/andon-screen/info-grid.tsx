@@ -114,7 +114,15 @@ export function InfoGrid({
                   wordBreak: 'break-word',
                 }}
               >
-                {call ? <span className='text-black'>{call.station}</span> : ''}
+                {call ? (
+                  <span className='text-black'>
+                    {call.station === 'UN LOADING'
+                      ? 'MODULE INSPECT'
+                      : call.station}
+                  </span>
+                ) : (
+                  ''
+                )}
               </div>
 
               {/* Icon */}

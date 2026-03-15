@@ -26,10 +26,14 @@ export const useSequenceManagement = () => {
 
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchSequences = useCallback(async () => {
+  const fetchSequences = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false
+
     try {
-      setLoading(true)
-      setError(null)
+      if (!silent) {
+        setLoading(true)
+        setError(null)
+      }
       logger.debug('Fetching sequences')
 
       const data = await sequenceApi.getSequences()
@@ -51,9 +55,13 @@ export const useSequenceManagement = () => {
     } catch (err) {
       // ✅ Use centralized error handler
       const errorResult = handleError(err, { operation: 'fetchSequences' })
-      setError(errorResult.userMessage)
+      if (!silent) {
+        setError(errorResult.userMessage)
+      }
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -99,8 +107,9 @@ export const useSequenceManagement = () => {
   }, [])
 
   const moveSequenceUp = useCallback(
-    async (index: number) => {
-      if (index === 0) return
+    async (sequenceId: number) => {
+      const index = sequences.queue.findIndex((seq) => seq.FID === sequenceId)
+      if (index <= 0) return
 
       const sequence = sequences.queue[index]
       showConfirmDialog(
@@ -124,8 +133,10 @@ export const useSequenceManagement = () => {
             // ✅ Use centralized error handler
             handleError(err, {
               operation: 'moveSequenceUp',
-              sequenceId: sequence.FID,
-              index,
+              metadata: {
+                sequenceId: sequence.FID,
+                index,
+              },
             })
           }
         },
@@ -135,8 +146,9 @@ export const useSequenceManagement = () => {
   )
 
   const moveSequenceDown = useCallback(
-    async (index: number) => {
-      if (index === sequences.queue.length - 1) return
+    async (sequenceId: number) => {
+      const index = sequences.queue.findIndex((seq) => seq.FID === sequenceId)
+      if (index < 0 || index === sequences.queue.length - 1) return
 
       const sequence = sequences.queue[index]
       showConfirmDialog(
@@ -160,8 +172,10 @@ export const useSequenceManagement = () => {
             // ✅ Use centralized error handler
             handleError(err, {
               operation: 'moveSequenceDown',
-              sequenceId: sequence.FID,
-              index,
+              metadata: {
+                sequenceId: sequence.FID,
+                index,
+              },
             })
           }
         },
@@ -171,8 +185,10 @@ export const useSequenceManagement = () => {
   )
 
   const parkSequence = useCallback(
-    async (index: number) => {
-      const sequence = sequences.queue[index]
+    async (sequenceId: number) => {
+      const sequence = sequences.queue.find((seq) => seq.FID === sequenceId)
+      if (!sequence) return
+
       showConfirmDialog(
         'Park Sequence',
         `Are you sure you want to park sequence ${sequence.FBARCODE}?`,
@@ -189,7 +205,9 @@ export const useSequenceManagement = () => {
             // ✅ Use centralized error handler
             handleError(err, {
               operation: 'parkSequence',
-              sequenceId: sequence.FID,
+              metadata: {
+                sequenceId: sequence.FID,
+              },
             })
           }
         },
@@ -226,8 +244,10 @@ export const useSequenceManagement = () => {
             // ✅ Use centralized error handler
             handleError(err, {
               operation: 'insertSequence',
-              sequenceId: sequence.FID,
-              payload,
+              metadata: {
+                sequenceId: sequence.FID,
+                payload,
+              },
             })
           }
         },
@@ -257,7 +277,9 @@ export const useSequenceManagement = () => {
             // ✅ Use centralized error handler
             handleError(err, {
               operation: 'removeFromParked',
-              sequenceId: sequence.FID,
+              metadata: {
+                sequenceId: sequence.FID,
+              },
             })
           }
         },
@@ -266,22 +288,42 @@ export const useSequenceManagement = () => {
     [sequences.parked, showConfirmDialog],
   )
 
-  const onAddManualSeq = useCallback(async () => {
-    try {
-      logger.info('Adding manual sequence', { type: 'E', model: 'LI-688D' })
+  const onAddManualSeq = useCallback(
+    async (orderType: 'ASSY' | 'CKD' | 'SERVICE PART', qty: number) => {
+      try {
+        logger.info('Adding manual sequence', {
+          type: 'E',
+          model: 'LI-688D',
+          orderType,
+          qty,
+        })
 
-      await sequenceApi.createSequence({
-        FTYPE_BATTERY: 'E',
-        FMODEL_BATTERY: 'LI-688D',
-      })
+        const updatedSequences = await sequenceApi.createSequence({
+          FTYPE_BATTERY: 'E',
+          FMODEL_BATTERY: 'LI-688D',
+          ORDER_TYPE: orderType,
+          QTY: qty,
+        })
 
-      toast.success('Manual sequence injected successfully')
-      await fetchSequences()
-    } catch (err) {
-      // ✅ Use centralized error handler
-      handleError(err, { operation: 'onAddManualSeq' })
-    }
-  }, [fetchSequences])
+        // Apply server-returned state immediately for zero-delay UX.
+        setSequences({
+          current: updatedSequences.current ?? null,
+          queue: updatedSequences.queue ?? [],
+          completed: updatedSequences.completed ?? [],
+          parked: updatedSequences.parked ?? [],
+        })
+
+        toast.success('Manual sequence injected successfully')
+
+        // Keep data in sync if concurrent changes happen on the line.
+        void fetchSequences()
+      } catch (err) {
+        // ✅ Use centralized error handler
+        handleError(err, { operation: 'onAddManualSeq' })
+      }
+    },
+    [fetchSequences],
+  )
 
   return {
     sequences,

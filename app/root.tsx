@@ -81,7 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body className='font-mono overflow-hidden'>
+      <body className='font-mono'>
         {children}
         <ScrollRestoration />
         <Scripts />
