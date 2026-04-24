@@ -28,18 +28,22 @@ const ORDER_TYPE_NUM_COLOR: Record<string, string> = {
   'Service Part': 'text-green-700',
 }
 
-const DEFAULT_ACT_BY_ORDER_TYPE: Record<OrderType, number> = {
-  Assy: 0,
-  CKD: 0,
-  'Service Part': 0,
-}
-
 interface SummaryCardsProps {
   isLoading: boolean
   models: ModelPlan[]
+  actualQtyByKey?: Record<string, number>
 }
 
-export function SummaryCards({ isLoading, models }: SummaryCardsProps) {
+export function SummaryCards({
+  isLoading,
+  models,
+  actualQtyByKey,
+}: SummaryCardsProps) {
+  const toSafeNumber = (value: unknown): number => {
+    const n = typeof value === 'number' ? value : Number(value)
+    return Number.isFinite(n) ? n : 0
+  }
+
   const showAll = models.length > 2
   const [selected, setSelected] = useState<string>(
     showAll ? 'all' : (models[0]?.id ?? ''),
@@ -81,23 +85,25 @@ export function SummaryCards({ isLoading, models }: SummaryCardsProps) {
               Target per order type
             </p>
           </div>
-          <Select value={selectedId} onValueChange={(v) => setSelected(v)}>
-            <SelectTrigger className='h-9 w-36 text-base'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {showAll && (
-                <SelectItem value='all' className='text-base font-medium'>
-                  All Models
-                </SelectItem>
-              )}
-              {models.map((m) => (
-                <SelectItem key={m.id} value={m.id} className='text-base'>
-                  {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className='flex items-center gap-2'>
+            <Select value={selectedId} onValueChange={(v) => setSelected(v)}>
+              <SelectTrigger className='h-9 w-36 text-base'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {showAll && (
+                  <SelectItem value='all' className='text-base font-medium'>
+                    All Models
+                  </SelectItem>
+                )}
+                {models.map((m) => (
+                  <SelectItem key={m.id} value={m.id} className='text-base'>
+                    {m.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardHeader>
 
@@ -106,7 +112,7 @@ export function SummaryCards({ isLoading, models }: SummaryCardsProps) {
         <AnimatePresence mode='popLayout'>
           {visibleModels.map((model, i) => {
             const totalPlan = ORDER_TYPES.reduce(
-              (s, ot) => s + model.plans[ot],
+              (s, ot) => s + toSafeNumber(model.plans[ot]),
               0,
             )
             return (
@@ -132,54 +138,60 @@ export function SummaryCards({ isLoading, models }: SummaryCardsProps) {
 
                 {/* 3 order-type tiles in a row */}
                 <div className='grid grid-cols-3 gap-2'>
-                  {ORDER_TYPES.map((ot) => (
-                    <div
-                      key={ot}
-                      className={cn(
-                        'flex flex-col rounded-xl border px-2.5 pt-2 pb-2.5 gap-1',
-                        'flex flex-col gap-1 rounded-xl border px-2.5 py-2',
-                        ORDER_TYPE_TILE_BG[ot],
-                      )}
-                    >
-                      <Badge
-                        variant='outline'
+                  {ORDER_TYPES.map((ot) => {
+                    const actKey = `${model.name}::${ot}`
+                    const actValue = toSafeNumber(actualQtyByKey?.[actKey])
+                    const planValue = toSafeNumber(model.plans[ot])
+
+                    return (
+                      <div
+                        key={ot}
                         className={cn(
-                          'w-fit self-center px-1.5 py-0 text-sm font-semibold text-center',
-                          ORDER_TYPE_COLORS[ot],
+                          'flex flex-col rounded-xl border px-2.5 pt-2 pb-2.5 gap-1',
+                          'flex flex-col gap-1 rounded-xl border px-2.5 py-2',
+                          ORDER_TYPE_TILE_BG[ot],
                         )}
                       >
-                        {ot}
-                      </Badge>
-                      <div className='grid grid-cols-2 items-end gap-2'>
-                        <div>
-                          <p
-                            className={cn(
-                              'mt-0.5 text-5xl font-black leading-none',
-                              ORDER_TYPE_NUM_COLOR[ot],
-                            )}
-                          >
-                            {model.plans[ot]}
-                          </p>
-                          <span className='text-sm text-muted-foreground'>
-                            Plan
-                          </span>
-                        </div>
-                        <div className='text-right'>
-                          <p
-                            className={cn(
-                              'mt-0.5 text-5xl font-black leading-none',
-                              ORDER_TYPE_NUM_COLOR[ot],
-                            )}
-                          >
-                            {DEFAULT_ACT_BY_ORDER_TYPE[ot]}
-                          </p>
-                          <span className='text-sm text-muted-foreground'>
-                            Act
-                          </span>
+                        <Badge
+                          variant='outline'
+                          className={cn(
+                            'w-fit self-center px-1.5 py-0 text-sm font-semibold text-center',
+                            ORDER_TYPE_COLORS[ot],
+                          )}
+                        >
+                          {ot}
+                        </Badge>
+                        <div className='grid grid-cols-2 items-end gap-2'>
+                          <div>
+                            <p
+                              className={cn(
+                                'mt-0.5 text-5xl font-black leading-none',
+                                ORDER_TYPE_NUM_COLOR[ot],
+                              )}
+                            >
+                              {planValue}
+                            </p>
+                            <span className='text-sm text-muted-foreground'>
+                              Plan
+                            </span>
+                          </div>
+                          <div className='text-right'>
+                            <p
+                              className={cn(
+                                'mt-0.5 text-5xl font-black leading-none',
+                                ORDER_TYPE_NUM_COLOR[ot],
+                              )}
+                            >
+                              {actValue}
+                            </p>
+                            <span className='text-sm text-muted-foreground'>
+                              Act
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </motion.div>
             )

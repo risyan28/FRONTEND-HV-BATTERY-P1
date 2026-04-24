@@ -148,9 +148,9 @@ body {
   animation: blink 1.5s infinite !important;
 }
 
-/* Prevent native date input picker UI from overlapping our custom icon
-   - hide native pickers for WebKit and Firefox
-   - normalize appearance and give extra right padding so custom icon fits
+/* Date input calendar icon behavior
+   - Chromium/WebKit: hide native indicator and use custom React icon
+   - Firefox: keep native indicator and hide custom React icon (avoid double icon)
 */
 input[type='date'] {
   appearance: none;
@@ -160,9 +160,22 @@ input[type='date'] {
 }
 
 input[type='date']::-webkit-calendar-picker-indicator {
-  display: none;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 2.5rem;
+  height: 100%;
+  cursor: pointer;
 }
 
-input[type='date']::-moz-calendar-picker-indicator {
-  display: none;
+@supports (-moz-appearance: none) {
+  input[type='date'] {
+    appearance: auto;
+    -moz-appearance: auto;
+    padding-right: 0.75rem !important;
+  }
+
+  .date-input-custom-icon {
+    display: none !important;
+  }
 }

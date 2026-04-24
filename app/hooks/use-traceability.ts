@@ -7,6 +7,7 @@ import { traceabilityApi } from '@/services/traceabilityApi'
 import { toast } from 'sonner'
 import { handleError } from '@/lib/error-handler'
 import logger from '@/lib/logger'
+import { getJakartaISODate } from '@/lib/datetime'
 
 interface UseTraceabilityResult {
   data: TraceabilityData[]
@@ -30,7 +31,7 @@ export const useTraceability = (): UseTraceabilityResult => {
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getJakartaISODate()
   const [dateRange, setDateRange] = useState({
     from: today,
     to: today,

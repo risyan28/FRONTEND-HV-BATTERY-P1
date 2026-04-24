@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowDown, Activity } from 'lucide-react'
 import type { Sequence } from '@/types/sequence'
 import { useEffect, useState } from 'react'
+import { formatJakartaDateTimeFull } from '@/lib/datetime'
 
 interface ProcessingSectionProps {
   data: Sequence | null
@@ -164,7 +165,9 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
             }}
             className='p-1 md:p-5 text-center flex items-center justify-center font-mono text-[10px] md:text-2xl overflow-hidden border-r border-yellow-500 last:border-r-0 font-bold'
           >
-            {data.FTIME_PRINTED}
+            {data.FTIME_PRINTED
+              ? formatJakartaDateTimeFull(data.FTIME_PRINTED)
+              : '-'}
           </div>
           <div
             style={{

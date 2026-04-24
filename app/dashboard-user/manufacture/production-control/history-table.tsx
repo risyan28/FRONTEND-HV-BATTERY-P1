@@ -8,29 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { AdvancedDataTable } from '@/components/ui/advanced-data-table'
 import { ORDER_TYPE_COLORS } from './constants'
 import type { PlanHistory, OrderType } from '@/types/prod-control'
-
-const getTodayISO = () => new Date().toISOString().split('T')[0]
-
-const formatDateShort = (iso: string) =>
-  new Date(iso + 'T00:00:00').toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-
-const formatDateTimeFull = (value: string) => {
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
-
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  const hh = String(d.getHours()).padStart(2, '0')
-  const min = String(d.getMinutes()).padStart(2, '0')
-  const ss = String(d.getSeconds()).padStart(2, '0')
-
-  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`
-}
+import { getJakartaISODate, formatJakartaDateTimeFull } from '@/lib/datetime'
 
 interface HistoryTableProps {
   isLoading: boolean
@@ -38,7 +16,7 @@ interface HistoryTableProps {
 }
 
 export function HistoryTable({ isLoading, history }: HistoryTableProps) {
-  const today = getTodayISO()
+  const today = getJakartaISODate()
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo] = useState(today)
   const [appliedFrom, setAppliedFrom] = useState(today)
@@ -68,7 +46,7 @@ export function HistoryTable({ isLoading, history }: HistoryTableProps) {
         header: 'Date',
         cell: ({ getValue }) => (
           <span className='whitespace-nowrap font-medium text-blue-700'>
-            {formatDateShort(getValue() as string)}
+            {String(getValue() as string).slice(0, 10)}
           </span>
         ),
         size: 110,
@@ -138,7 +116,7 @@ export function HistoryTable({ isLoading, history }: HistoryTableProps) {
         header: 'Created At',
         cell: ({ getValue }) => (
           <span className='whitespace-nowrap text-muted-foreground'>
-            {formatDateTimeFull(getValue() as string)}
+            {formatJakartaDateTimeFull(getValue() as string)}
           </span>
         ),
         size: 130,

@@ -7,10 +7,11 @@ import type { PrintHistory, ReprintRequest } from '@/lib/validation'
 import { printHistoryApi } from '@/services/printHistoryApi'
 import { toast } from 'sonner'
 import logger from '@/lib/logger'
+import { getJakartaISODate } from '@/lib/datetime'
 
 export function usePrintHistoryQuery() {
   const queryClient = useQueryClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getJakartaISODate()
   const [dateRange, setDateRange] = useState({
     from: today,
     to: today,
@@ -52,6 +53,7 @@ export function usePrintHistoryQuery() {
     const payload: ReprintRequest = {
       id: item.id,
       modelBattery: item.modelBattery as string,
+      productionDate: item.production_date,
     }
     reprintMutation.mutate(payload)
   }

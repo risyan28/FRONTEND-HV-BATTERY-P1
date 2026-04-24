@@ -31,6 +31,7 @@ export interface ApiPlanDetail {
   MODEL_NAME: string
   ORDER_TYPE: string
   QTY_PLAN: number
+  QTY_ACTUAL?: number
   SEQ_GENERATED: number // 1 = sudah generate, 0 = belum
   SEQ_GENERATED_AT: string | null
   CREATED_AT: string
@@ -65,9 +66,13 @@ export function apiPlanToModelPlans(plan: ApiPlan): {
 } {
   // Collect unique model names (preserve order)
   const modelNames = [...new Set(plan.details.map((d) => d.MODEL_NAME))]
+  const orderTypes = [...new Set(plan.details.map((d) => d.ORDER_TYPE))]
 
   const models: ModelPlan[] = modelNames.map((name) => {
     const plansMap: Record<string, number> = {}
+    for (const ot of orderTypes) {
+      plansMap[ot] = 0
+    }
     for (const d of plan.details) {
       if (d.MODEL_NAME === name) {
         plansMap[d.ORDER_TYPE] = d.QTY_PLAN
@@ -82,6 +87,16 @@ export function apiPlanToModelPlans(plan: ApiPlan): {
   })
 
   return { models, planId: plan.FID, planLocked: plan.IS_LOCKED === 1 }
+}
+
+/** Build a lookup map for actual qty by "MODEL_NAME::ORDER_TYPE" key */
+export function apiPlanToActualQtyByKey(plan: ApiPlan): Record<string, number> {
+  return Object.fromEntries(
+    plan.details.map((d) => [
+      `${d.MODEL_NAME}::${d.ORDER_TYPE}`,
+      Number(d.QTY_ACTUAL ?? 0),
+    ]),
+  )
 }
 
 /** Convert API plan to PlanHistory[] for the history table */
@@ -113,6 +128,39 @@ export const productionPlanApi = {
   /** GET /production-plan/order-types */
   getOrderTypes: async (): Promise<ApiOrderType[]> => {
     const { data } = await api.get('/production-plan/order-types')
+    return data
+  },
+
+  /** GET /production-plan/cycle-time */
+  getCycleTime: async (): Promise<{
+    cycleTime: number
+    updatedAt: string | null
+  }> => {
+    const { data } = await api.get('/production-plan/cycle-time')
+    return data
+  },
+
+  /** PUT /production-plan/cycle-time */
+  setCycleTime: async (
+    cycleTime: number,
+  ): Promise<{
+    success: boolean
+    cycleTime: number
+    updatedAt: string
+  }> => {
+    const { data } = await api.put('/production-plan/cycle-time', { cycleTime })
+    return data
+  },
+
+  /** POST /production-plan/andon-global/reset-all */
+  resetAndonGlobal: async (): Promise<{
+    success: boolean
+    affectedRows: number
+    andonAffectedRows: number
+    downtimeAffectedRows: number
+    updatedAt: string
+  }> => {
+    const { data } = await api.post('/production-plan/andon-global/reset-all')
     return data
   },
 

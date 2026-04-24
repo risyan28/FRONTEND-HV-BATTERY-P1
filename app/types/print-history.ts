@@ -15,6 +15,9 @@ export interface PrintHistory {
   model_battery?: string
   operator?: string | null
   status?: string | null
+  order_type?: string | null
+  print_type?: 'ORIGINAL' | 'RE-PRINT' | string | null
+  reprint_sequence?: number | null
 
   // Legacy camelCase fields for backward compatibility
   batteryPackId?: string
@@ -33,6 +36,7 @@ export interface ReprintRequest {
   id: number
   model_battery?: string
   modelBattery?: string // Legacy compatibility
+  productionDate?: string
 }
 
 // Tambahin di sini kalau nanti ada tipe lain, misal:

@@ -6,9 +6,10 @@ import { useState } from 'react'
 import type { TraceabilityData } from '@/types/traceability'
 import { traceabilityApi } from '@/services/traceabilityApi'
 import { toast } from 'sonner'
+import { getJakartaISODate } from '@/lib/datetime'
 
 export function useTraceabilityQuery() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getJakartaISODate()
   const [dateRange, setDateRange] = useState({
     from: today,
     to: today,

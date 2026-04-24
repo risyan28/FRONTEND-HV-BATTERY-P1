@@ -17,12 +17,15 @@ import {
 import {
   productionPlanApi,
   apiPlanToModelPlans,
+  apiPlanToActualQtyByKey,
   apiPlansToHistory,
 } from '@/services/productionPlanApi'
+import { addDaysJakartaISO, getJakartaISODate } from '@/lib/datetime'
+import { getSocket, subscribeRoom, unsubscribeRoom } from '@/lib/socket'
 
 const genId = () => Math.random().toString(36).slice(2)
 
-const getTodayISO = () => new Date().toISOString().split('T')[0]
+const getTodayISO = () => getJakartaISODate()
 
 // Derive TabModels from ModelPlan[] for SummaryCards compatibility
 function toTabModels(models: ModelPlan[], activeOts: string[]): TabModels {
@@ -50,6 +53,9 @@ export function useProductionControl() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Reset-all state
+  const [isResetAllLoading, setIsResetAllLoading] = useState(false)
+
   // Form state
   const [date, setDate] = useState(getTodayISO())
   const today = date
@@ -65,6 +71,11 @@ export function useProductionControl() {
   const [planLocked, setPlanLocked] = useState(false)
   const [savedSummary, setSavedSummary] = useState<ModelPlan[] | null>(null)
   const [currentPlanId, setCurrentPlanId] = useState<number | null>(null)
+
+  // Actual state (per-item key = `${modelName}::${orderType}`)
+  const [actualQtyByKey, setActualQtyByKey] = useState<Record<string, number>>(
+    {},
+  )
 
   // History state
   const [history, setHistory] = useState<PlanHistory[]>([])
@@ -84,15 +95,16 @@ export function useProductionControl() {
     { name: string; isDefault: boolean }[]
   >([])
 
+  // Global setting
+  const [cycleTime, setCycleTime] = useState<number>(0)
+
   // Prevent double-fetching in StrictMode
   const initDone = useRef(false)
 
   // â”€â”€ Derive today's history date range â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const historyDefaultFrom = useMemo(() => {
-    const d = new Date()
-    d.setDate(d.getDate() - 30)
-    return d.toISOString().split('T')[0]
+    return addDaysJakartaISO(getTodayISO(), -30)
   }, [])
 
   // â”€â”€ Initial load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -104,12 +116,16 @@ export function useProductionControl() {
     const load = async () => {
       setIsLoading(true)
       try {
-        const [otData, mdData, planData, histData] = await Promise.all([
-          productionPlanApi.getOrderTypes(),
-          productionPlanApi.getModels(),
-          productionPlanApi.getPlan(getTodayISO(), 'DAY'),
-          productionPlanApi.getHistory(historyDefaultFrom, getTodayISO()),
-        ])
+        const [otData, mdData, cycleData, planData, histData] =
+          await Promise.all([
+            productionPlanApi.getOrderTypes(),
+            productionPlanApi.getModels(),
+            productionPlanApi.getCycleTime(),
+            productionPlanApi.getPlan(getTodayISO(), 'DAY'),
+            productionPlanApi.getHistory(historyDefaultFrom, getTodayISO()),
+          ])
+
+        setCycleTime(Number(cycleData?.cycleTime ?? 0))
 
         // Populate master lists
         setOrderTypesFromApi(otData.map((o) => o.ORDER_TYPE))
@@ -131,6 +147,7 @@ export function useProductionControl() {
             planLocked: locked,
           } = apiPlanToModelPlans(planData)
           setModels(existingModels)
+          setActualQtyByKey(apiPlanToActualQtyByKey(planData))
           setActiveModel(existingModels[0]?.id ?? DEFAULT_MODEL_PLANS[0].id)
           setCurrentPlanId(planId)
           setPlanSaved(true)
@@ -157,6 +174,7 @@ export function useProductionControl() {
             setModels(defaultModels)
             setActiveModel(defaultModels[0].id)
           }
+          setActualQtyByKey({})
           setGeneratedQtyByKey({})
         }
 
@@ -190,6 +208,7 @@ export function useProductionControl() {
             planLocked: locked,
           } = apiPlanToModelPlans(planData)
           setModels(existingModels)
+          setActualQtyByKey(apiPlanToActualQtyByKey(planData))
           setActiveModel(existingModels[0]?.id ?? '')
           setCurrentPlanId(planId)
           setPlanSaved(true)
@@ -224,6 +243,7 @@ export function useProductionControl() {
           setPlanSaved(false)
           setPlanLocked(false)
           setSavedSummary(null)
+          setActualQtyByKey({})
           setGeneratedQtyByKey({})
         }
       } catch (err) {
@@ -235,6 +255,77 @@ export function useProductionControl() {
     refetch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, shift])
+
+  // Realtime actual: listen prod-plan-detail updates via WS and refresh actuals
+  useEffect(() => {
+    const socket = getSocket()
+    const topic = 'prod-plan-detail'
+    const eventName = 'prod-plan-detail:update'
+
+    type WsPlanDetailRow = {
+      PROD_DATE: string | null
+      SHIFT: string
+      MODEL_NAME: string
+      ORDER_TYPE: string
+      QTY_ACTUAL: number
+      QTY_PLAN?: number
+    }
+
+    type WsPayload = {
+      kind?: 'snapshot' | 'delta'
+      rows?: WsPlanDetailRow[]
+    }
+
+    subscribeRoom(topic)
+
+    const onPlanDetailUpdate = (payload: WsPayload) => {
+      const rows = payload?.rows
+      if (!Array.isArray(rows) || rows.length === 0) return
+
+      // Only apply rows relevant to current selection.
+      const relevant = rows.filter(
+        (r) =>
+          String(r.PROD_DATE ?? '') === date && String(r.SHIFT ?? '') === shift,
+      )
+      if (relevant.length === 0) return
+
+      // Update plan numbers only when locked (avoid overriding user edits)
+      if (planLocked) {
+        setModels((prev) =>
+          prev.map((m) => {
+            const updatesForModel = relevant.filter(
+              (r) => String(r.MODEL_NAME ?? '') === m.name,
+            )
+            if (updatesForModel.length === 0) return m
+
+            const nextPlans = { ...m.plans }
+            for (const r of updatesForModel) {
+              if (typeof r.QTY_PLAN === 'number') {
+                nextPlans[r.ORDER_TYPE as OrderType] = Number(r.QTY_PLAN)
+              }
+            }
+            return { ...m, plans: nextPlans }
+          }),
+        )
+      }
+
+      setActualQtyByKey((prev) => {
+        const next = { ...prev }
+        for (const r of relevant) {
+          const key = `${String(r.MODEL_NAME ?? '')}::${String(r.ORDER_TYPE ?? '')}`
+          next[key] = Number(r.QTY_ACTUAL ?? 0)
+        }
+        return next
+      })
+    }
+
+    socket.on(eventName, onPlanDetailUpdate)
+
+    return () => {
+      socket.off(eventName, onPlanDetailUpdate)
+      unsubscribeRoom(topic)
+    }
+  }, [date, shift, planLocked])
 
   // â”€â”€ Model handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -454,6 +545,32 @@ export function useProductionControl() {
     [summarySource, activeOts],
   )
 
+  const saveCycleTime = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      await productionPlanApi.setCycleTime(cycleTime)
+      toast.success('Cycle time saved.')
+    } catch (err) {
+      console.error('Failed to save cycle time:', err)
+      toast.error('Failed to save cycle time. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [cycleTime])
+
+  const resetAllAndonGlobal = useCallback(async () => {
+    try {
+      setIsResetAllLoading(true)
+      const res = await productionPlanApi.resetAndonGlobal()
+      toast.success('Reset Andon berhasil.')
+    } catch (err) {
+      console.error('Failed to reset ANDON global:', err)
+      toast.error('Reset Andon gagal. Coba lagi.')
+    } finally {
+      setIsResetAllLoading(false)
+    }
+  }, [])
+
   return {
     today,
     date,
@@ -467,8 +584,14 @@ export function useProductionControl() {
     setActiveModel,
     newModelName,
     setNewModelName,
+    cycleTime,
+    setCycleTime,
+    saveCycleTime,
+    resetAllAndonGlobal,
+    isResetAllLoading,
     planSaved,
     planLocked,
+    actualQtyByKey,
     editPlan,
     savedModels: savedSummary ?? models,
     summarySource,

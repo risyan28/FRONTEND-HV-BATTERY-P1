@@ -86,6 +86,9 @@ export const PrintHistorySchema = z
     shift: z.string().nullable().optional(),
     operator: z.string().nullable().optional(),
     status: z.string().nullable().optional(),
+    order_type: z.string().nullable().optional(),
+    print_type: z.string().nullable().optional(),
+    reprint_sequence: z.number().nullable().optional(),
   })
   .passthrough() // Allow additional fields from backend
 
@@ -95,23 +98,10 @@ export const ReprintRequestSchema = z.object({
   id: z.number().positive('Invalid print history ID'),
   reason: z.string().min(5, 'Reason must be at least 5 characters').optional(),
   modelBattery: z.string().optional(),
-})
-
-// ==================== AUTH SCHEMAS ====================
-
-export const LoginCredentialsSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-
-export const LoginResponseSchema = z.object({
-  token: z.string(),
-  user: z.object({
-    id: z.string(),
-    username: z.string(),
-    role: z.enum(['admin', 'user', 'operator']),
-    fullName: z.string().optional(),
-  }),
+  productionDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid productionDate format (YYYY-MM-DD)')
+    .optional(),
 })
 
 // ==================== COMMON SCHEMAS ====================
@@ -141,9 +131,6 @@ export type DateRange = z.infer<typeof DateRangeSchema>
 export type PrintHistory = z.infer<typeof PrintHistorySchema>
 export type PrintHistoryResponse = z.infer<typeof PrintHistoryResponseSchema>
 export type ReprintRequest = z.infer<typeof ReprintRequestSchema>
-
-export type LoginCredentials = z.infer<typeof LoginCredentialsSchema>
-export type LoginResponse = z.infer<typeof LoginResponseSchema>
 
 export type Pagination = z.infer<typeof PaginationSchema>
 export type HealthCheck = z.infer<typeof HealthCheckSchema>

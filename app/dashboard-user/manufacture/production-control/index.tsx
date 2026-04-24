@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, RotateCcw } from 'lucide-react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { PageHeader } from '@/components/production/page-header'
 import { useProductionControl } from '@/hooks/use-production-control'
@@ -42,6 +42,44 @@ export function ProductionControlPage() {
 
         {/* Full content with normal page scroll */}
         <div className='px-2 pb-3 md:px-4'>
+          {/* ── Andon Global Settings ────────────────────────────────── */}
+          <section className='mb-4 space-y-2'>
+            <div className='rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm'>
+              <div className='flex items-center justify-between gap-4'>
+                <div className='flex items-start gap-2.5 flex-1'>
+                  <div className='mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-slate-400 text-xs font-bold text-white shrink-0'>
+                    ℹ️
+                  </div>
+                  <div className='space-y-1'>
+                    <p className='font-semibold text-slate-900'>
+                      Andon Global Settings
+                    </p>
+                    <p className='text-sm text-slate-700'>
+                      Resets Andon counters + downtime logs (does not affect
+                      Plan/Actual data)
+                    </p>
+                    <p className='text-xs text-slate-600 italic'>
+                      💡 Click "Reset All Andon" if counters do not reset
+                      automatically at the beginning of shift
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={ctrl.resetAllAndonGlobal}
+                  disabled={ctrl.isResetAllLoading}
+                  className='shrink-0 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+                >
+                  <RotateCcw
+                    className={`h-4 w-4 ${ctrl.isResetAllLoading ? 'animate-spin' : ''}`}
+                  />
+                  {ctrl.isResetAllLoading
+                    ? 'Resetting...'
+                    : 'Reset All Counter Andon'}
+                </button>
+              </div>
+            </div>
+          </section>
+
           {/* ── Step 1: Plan Setting ─────────────────────────────────── */}
           <section className='space-y-2'>
             <div className='flex items-center gap-2 px-1'>
@@ -59,10 +97,13 @@ export function ProductionControlPage() {
                 onDateChange={ctrl.setDate}
                 isLoading={ctrl.isLoading}
                 shift={ctrl.shift}
+                onShiftChange={ctrl.setShift}
+                cycleTime={ctrl.cycleTime}
+                onCycleTimeChange={ctrl.setCycleTime}
+                onSaveCycleTime={ctrl.saveCycleTime}
                 models={ctrl.models}
                 activeModel={ctrl.activeModel}
                 newModelName={ctrl.newModelName}
-                onShiftChange={ctrl.setShift}
                 onModelTabChange={ctrl.setActiveModel}
                 onUpdatePlan={ctrl.updatePlan}
                 onSave={ctrl.savePlan}
@@ -75,6 +116,7 @@ export function ProductionControlPage() {
               <SummaryCards
                 isLoading={ctrl.isLoading}
                 models={ctrl.savedModels}
+                actualQtyByKey={ctrl.actualQtyByKey}
               />
             </div>
           </section>

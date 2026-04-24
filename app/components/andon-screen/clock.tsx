@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { getJakartaISODate } from '@/lib/datetime'
 
 type Props = { className?: string; fontSize?: string }
 
@@ -13,23 +14,14 @@ export function Clock({ className, fontSize = 'text-2xl' }: Props) {
     return () => clearInterval(id)
   }, [])
 
-  const time = now.toLocaleTimeString([], { hour12: false })
-  const date = `${String(now.getDate()).padStart(2, '0')}-${
-    [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Juni',
-      'Juli',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ][now.getMonth()]
-  }-${now.getFullYear()}`
+  const time = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Jakarta',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(now)
+  const date = getJakartaISODate(now)
 
   return (
     <div

@@ -19,17 +19,17 @@ export function AppHeader({ title, className }: AppHeaderProps) {
   }, [])
 
   const formatTime = (date: Date) =>
-    date
-      .toLocaleTimeString('id-ID', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
-      .replace(/\./g, ':')
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jakarta',
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).format(date)
 
   const formatDate = (date: Date) =>
     date.toLocaleDateString('id-ID', {
+      timeZone: 'Asia/Jakarta',
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -105,4 +105,3 @@ export function AppHeader({ title, className }: AppHeaderProps) {
     </motion.header>
   )
 }
-

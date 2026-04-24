@@ -14,7 +14,10 @@
     "test:e2e": "playwright test --config tests/playwright.config.ts",
     "test:e2e:ui": "playwright test --ui --config tests/playwright.config.ts",
     "test:e2e:headed": "playwright test --headed --config tests/playwright.config.ts",
-    "bundle:fe": "node scripts/build-frontend-bundle.mjs",
+    "bundle:fe": "node scripts/build-runtime-bundle.mjs",
+    "bundle:fe:auto": "node scripts/build-runtime-bundle.mjs",
+    "bundle:fe:full": "node scripts/build-runtime-bundle.mjs --full",
+    "bundle:fe:slim": "node scripts/build-runtime-bundle.mjs --slim",
     "git:solo": "git add . && git diff --cached --quiet || git commit -m \"Update project\" && git pull origin main --no-rebase && git push origin main",
     "git:team": "git add . && git diff --cached --quiet || git commit -m \"Update project\" && git pull origin main --no-rebase && git push origin $(git branch --show-current)",
     "git:new": "git checkout -b"

@@ -33,19 +33,11 @@ export const createApi = (): AxiosInstance => {
     headers: { 'Content-Type': 'application/json' },
   })
 
-  // Request interceptor - log outgoing requests and add auth token
+  // Request interceptor - log outgoing requests
   api.interceptors.request.use(
     (config) => {
       const startTime = Date.now()
       config.metadata = { startTime } // Store for response timing
-
-      // ✅ Add auth token to all requests (except /auth endpoints)
-      if (!config.url?.startsWith('/auth')) {
-        const token = localStorage.getItem('auth_token')
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-      }
 
       logger.api.request(
         config.method?.toUpperCase() || 'UNKNOWN',
@@ -87,34 +79,7 @@ export const createApi = (): AxiosInstance => {
         error,
       )
 
-      // ✅ Handle 401 Unauthorized - attempt token refresh
-      if (error.response?.status === 401 && !originalRequest._retryAfterAuth) {
-        originalRequest._retryAfterAuth = true
-
-        try {
-          logger.debug('Attempting to refresh token after 401')
-
-          // Import dynamically to avoid circular dependency
-          const { refreshToken } = await import('./auth')
-          const newToken = await refreshToken()
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${newToken}`
-          return api(originalRequest)
-        } catch (refreshError) {
-          // Refresh failed, logout user
-          logger.error('Token refresh failed, logging out', refreshError)
-          const { logout } = await import('./auth')
-          logout()
-
-          // Redirect to login (optional - can be handled in router)
-          window.location.href = '/login'
-
-          return Promise.reject(refreshError)
-        }
-      }
-
-      // Retry logic for specific cases
+      // Retry logic for specific cases (network errors, timeouts, etc)
       if (shouldRetry(error) && !originalRequest._retry) {
         originalRequest._retry = true
         const retryDelay = getRetryDelay(originalRequest._retryCount || 0)
@@ -196,6 +161,5 @@ declare module 'axios' {
     }
     _retry?: boolean
     _retryCount?: number
-    _retryAfterAuth?: boolean // For token refresh retry
   }
 }

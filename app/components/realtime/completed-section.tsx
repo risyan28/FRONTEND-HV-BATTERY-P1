@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import type { Sequence } from '@/types/sequence'
+import { formatJakartaDateTimeFull } from '@/lib/datetime'
 
 interface CompletedSectionProps {
   data: Sequence[]
@@ -85,7 +86,9 @@ export function CompletedSection({ data }: CompletedSectionProps) {
                   Time Complete:
                 </span>
                 <span className='ml-1 text-[10px] md:text-base font-bold'>
-                  {item.FTIME_COMPLETED}
+                  {item.FTIME_COMPLETED
+                    ? formatJakartaDateTimeFull(item.FTIME_COMPLETED)
+                    : '-'}
                 </span>
               </div>
             </motion.div>

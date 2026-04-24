@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import type { Sequence } from '@/types/sequence'
+import { formatJakartaDateTimeFull } from '@/lib/datetime'
 
 interface SequenceTableProps {
   data: Sequence[]
@@ -207,7 +208,9 @@ export function SequenceTable({ data }: SequenceTableProps) {
                              border-r border-slate-200 dark:border-slate-600 last:border-r-0 
                              overflow-hidden truncate text-[9px] md:text-xl'
                     >
-                      {row.FTIME_RECEIVED}
+                      {row.FTIME_RECEIVED
+                        ? formatJakartaDateTimeFull(row.FTIME_RECEIVED)
+                        : '-'}
                     </div>
 
                     {/* DATA FROM */}

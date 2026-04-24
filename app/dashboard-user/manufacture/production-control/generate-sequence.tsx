@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, CheckCircle2, ClipboardList } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -19,13 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { ORDER_TYPES, ORDER_TYPE_COLORS } from './constants'
 import type { ModelPlan, OrderType, Shift } from '@/types/prod-control'
-
-const formatDateDisplay = (iso: string) =>
-  new Date(iso + 'T00:00:00').toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
+const formatDateDisplay = (iso: string) => String(iso).slice(0, 10)
 
 interface GenerateItem {
   modelId: string
@@ -43,7 +37,11 @@ interface GenerateSequenceProps {
   generatingItem: string | null
   generatedKeys: Set<string>
   deltaByKey: Record<string, number>
-  onGenerate: (modelId: string, modelName: string, ot: OrderType) => void
+  onGenerate: (
+    modelId: string,
+    modelName: string,
+    ot: OrderType,
+  ) => Promise<void>
 }
 
 export function GenerateSequence({
@@ -58,6 +56,7 @@ export function GenerateSequence({
   onGenerate,
 }: GenerateSequenceProps) {
   const [dialogTarget, setDialogTarget] = useState<GenerateItem | null>(null)
+  const confirmLockRef = useRef(false)
 
   const items: GenerateItem[] = savedModels.flatMap((m) =>
     ORDER_TYPES.filter((ot) => {
@@ -248,7 +247,14 @@ export function GenerateSequence({
       </Card>
 
       {/* ── Confirmation Dialog ───────────────────────────────── */}
-      <Dialog open={!!dialogTarget} onOpenChange={() => setDialogTarget(null)}>
+      <Dialog
+        open={!!dialogTarget}
+        onOpenChange={() => {
+          // Reset confirm lock when dialog closes.
+          confirmLockRef.current = false
+          setDialogTarget(null)
+        }}
+      >
         <DialogContent className='sm:max-w-xl'>
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2 text-2xl font-bold'>
@@ -275,14 +281,22 @@ export function GenerateSequence({
             <Button
               size='sm'
               className='text-lg text-white'
-              onClick={() => {
-                if (dialogTarget) {
-                  onGenerate(
+              disabled={confirmLockRef.current || !!generatingItem}
+              onClick={async () => {
+                if (!dialogTarget) return
+                if (confirmLockRef.current) return
+
+                // Hard lock to prevent double-click / duplicate requests.
+                confirmLockRef.current = true
+                try {
+                  await onGenerate(
                     dialogTarget.modelId,
                     dialogTarget.modelName,
                     dialogTarget.orderType,
                   )
                   setDialogTarget(null)
+                } finally {
+                  // Keep locked while request in-flight; unlock when dialog closes.
                 }
               }}
             >

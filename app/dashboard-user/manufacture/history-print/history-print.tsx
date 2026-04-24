@@ -7,6 +7,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PrintHistory } from '@/types/print-history'
+import { formatJakartaDateTimeFull, toJakartaISODate } from '@/lib/datetime'
 
 interface HistoryPrintLabelProps {
   data: PrintHistory[]
@@ -31,6 +32,17 @@ export function HistoryPrintLabel({
   handleRePrint,
   enableExcelDownload = true,
 }: HistoryPrintLabelProps) {
+  const toOrdinal = (value: number): string => {
+    const mod100 = value % 100
+    if (mod100 >= 11 && mod100 <= 13) return `${value}th`
+
+    const mod10 = value % 10
+    if (mod10 === 1) return `${value}st`
+    if (mod10 === 2) return `${value}nd`
+    if (mod10 === 3) return `${value}rd`
+    return `${value}th`
+  }
+
   const columns: ColumnDef<PrintHistory>[] = useMemo(
     () => [
       {
@@ -57,13 +69,9 @@ export function HistoryPrintLabel({
         cell: ({ row }) => {
           const date = row.getValue('production_date') as string
           if (!date) return <div className='text-sm text-gray-700'>-</div>
-          const d = new Date(date)
-          const day = String(d.getDate()).padStart(2, '0')
-          const month = String(d.getMonth() + 1).padStart(2, '0')
-          const year = d.getFullYear()
           return (
             <div className='text-sm whitespace-nowrap text-gray-700'>
-              {`${day}-${month}-${year}`}
+              {String(toJakartaISODate(date)).slice(0, 10)}
             </div>
           )
         },
@@ -78,15 +86,51 @@ export function HistoryPrintLabel({
         ),
       },
       {
+        accessorKey: 'order_type',
+        header: 'ORDER TYPE',
+        cell: ({ row }) => {
+          const val = row.getValue('order_type') as string | null | undefined
+          return (
+            <div className='text-sm whitespace-nowrap text-gray-700'>
+              {val || '-'}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'print_type',
+        header: 'PRINT TYPE',
+        cell: ({ row }) => {
+          const value = String(row.getValue('print_type') || 'FIRST PRINT')
+          const isReprint = value === 'RE-PRINT'
+          const sequence = Number(row.original.reprint_sequence || 0)
+
+          return (
+            <div className='whitespace-nowrap'>
+              <span
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${
+                  isReprint
+                    ? 'bg-amber-100 text-amber-800 border-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                }`}
+              >
+                {isReprint
+                  ? `RE-PRINT LABEL (${toOrdinal(Math.max(sequence, 1))})`
+                  : 'FIRST PRINT LABEL'}
+              </span>
+            </div>
+          )
+        },
+      },
+      {
         accessorKey: 'print_datetime',
         header: 'TIME PRINT',
         cell: ({ row }) => {
           const fullStr = row.getValue('print_datetime') as string
           if (!fullStr) return <div className='text-sm text-gray-700'>-</div>
-          const timePart = fullStr.split('T')[1]?.split('.')[0] || fullStr
           return (
             <div className='text-sm whitespace-nowrap text-gray-700'>
-              {timePart}
+              {formatJakartaDateTimeFull(fullStr)}
             </div>
           )
         },

@@ -26,6 +26,7 @@ interface AdvancedDataTableProps<TData> {
   globalFilterPlaceholder?: string
   enableExcelDownload?: boolean
   excelFileName?: string
+  frozenColumnIds?: string[]
 }
 
 export function AdvancedDataTable<TData>({
@@ -40,10 +41,23 @@ export function AdvancedDataTable<TData>({
   globalFilterPlaceholder = 'Search...',
   enableExcelDownload = false,
   excelFileName = 'data',
+  frozenColumnIds = [],
 }: AdvancedDataTableProps<TData>) {
   const [globalFilter, setGlobalFilter] = useState('')
   const fromDateRef = useRef<HTMLInputElement>(null)
   const toDateRef = useRef<HTMLInputElement>(null)
+
+  const showDatePickerIfSupported = (input: HTMLInputElement | null) => {
+    if (!input) return
+    const isFirefox = /firefox/i.test(window.navigator.userAgent)
+    if (isFirefox) return
+
+    try {
+      input.showPicker?.()
+    } catch {
+      // Ignore: browser may block programmatic picker in some contexts.
+    }
+  }
 
   const handleDownloadExcel = () => {
     const filteredRows = table.getFilteredRowModel().rows
@@ -94,6 +108,24 @@ export function AdvancedDataTable<TData>({
     },
   })
 
+  const pinnedColumnIds = useMemo(() => {
+    const uniqueIds = new Set<string>(['no', ...frozenColumnIds])
+    return Array.from(uniqueIds)
+  }, [frozenColumnIds])
+
+  const getColumnMinWidth = (columnId: string) => (columnId === 'no' ? 70 : 220)
+
+  const getStickyLeft = (columnId: string, orderedPinnedIds: string[]) => {
+    const pinnedIndex = orderedPinnedIds.indexOf(columnId)
+    if (pinnedIndex < 0) return undefined
+
+    let left = 0
+    for (let i = 0; i < pinnedIndex; i++) {
+      left += getColumnMinWidth(orderedPinnedIds[i])
+    }
+    return left
+  }
+
   if (loading && !isSearching) {
     return (
       <div className='flex-1 px-4 sm:px-6 lg:px-8'>
@@ -120,16 +152,12 @@ export function AdvancedDataTable<TData>({
                   onChange={(e) =>
                     setDateRange({ ...dateRange, from: e.target.value })
                   }
-                  onClick={(e) => {
-                    const target = e.target as HTMLInputElement
-                    target.showPicker?.()
-                  }}
                   className='border-2 border-gray-300 rounded-lg pl-3 pr-10 py-2 text-sm w-full bg-white hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer'
                 />
                 <Calendar
-                  className='absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer z-10'
+                  className='date-input-custom-icon absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer z-10'
                   aria-hidden='true'
-                  onClick={() => fromDateRef.current?.showPicker()}
+                  onClick={() => showDatePickerIfSupported(fromDateRef.current)}
                 />
               </div>
             </div>
@@ -146,16 +174,12 @@ export function AdvancedDataTable<TData>({
                   onChange={(e) =>
                     setDateRange({ ...dateRange, to: e.target.value })
                   }
-                  onClick={(e) => {
-                    const target = e.target as HTMLInputElement
-                    target.showPicker?.()
-                  }}
                   className='border-2 border-gray-300 rounded-lg pl-3 pr-10 py-2 text-sm w-full bg-white hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer'
                 />
                 <Calendar
-                  className='absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer z-10'
+                  className='date-input-custom-icon absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer z-10'
                   aria-hidden='true'
-                  onClick={() => toDateRef.current?.showPicker()}
+                  onClick={() => showDatePickerIfSupported(toDateRef.current)}
                 />
               </div>
             </div>
@@ -290,36 +314,48 @@ export function AdvancedDataTable<TData>({
           <div className='flex-1 min-h-0 border-2 border-t-0 border-gray-200 rounded-b-xl bg-white overflow-hidden shadow-lg'>
             <div className='overflow-x-auto overflow-y-auto h-full'>
               <table className='border-collapse text-sm min-w-max w-full'>
-                <thead className='bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10'>
+                <thead className='bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-30'>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className='border-b-2 border-r border-gray-200 px-4 py-4 text-left font-bold text-gray-800 whitespace-nowrap'
-                          style={{
-                            minWidth: header.id === 'no' ? '70px' : '220px',
-                            position: header.id === 'no' ? 'sticky' : 'static',
-                            left: header.id === 'no' ? 0 : undefined,
-                            zIndex: header.id === 'no' ? 20 : undefined,
-                            background:
-                              header.id === 'no'
-                                ? 'linear-gradient(to right, #f9fafb, #f3f4f6)'
-                                : undefined,
-                            boxShadow:
-                              header.id === 'no'
-                                ? '2px 0 8px -2px rgba(0,0,0,0.1)'
-                                : undefined,
-                          }}
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </th>
-                      ))}
+                      {(() => {
+                        const orderedPinnedHeaderIds = headerGroup.headers
+                          .filter((header) =>
+                            pinnedColumnIds.includes(header.id),
+                          )
+                          .map((header) => header.id)
+
+                        return headerGroup.headers.map((header) => {
+                          const isPinned = pinnedColumnIds.includes(header.id)
+                          const stickyLeft = getStickyLeft(
+                            header.id,
+                            orderedPinnedHeaderIds,
+                          )
+
+                          return (
+                            <th
+                              key={header.id}
+                              className='border-b-2 border-r border-gray-200 px-4 py-4 text-left font-bold text-gray-800 whitespace-nowrap'
+                              style={{
+                                minWidth: header.id === 'no' ? '70px' : '220px',
+                                position: isPinned ? 'sticky' : 'static',
+                                left: isPinned ? stickyLeft : undefined,
+                                top: isPinned ? 0 : undefined,
+                                zIndex: isPinned ? 40 : 30,
+                                background: isPinned
+                                  ? 'linear-gradient(to right, #f9fafb, #f3f4f6)'
+                                  : undefined,
+                              }}
+                            >
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                  )}
+                            </th>
+                          )
+                        })
+                      })()}
                     </tr>
                   ))}
                 </thead>
@@ -337,32 +373,54 @@ export function AdvancedDataTable<TData>({
                     table.getRowModel().rows.map((row, idx) => (
                       <tr
                         key={row.id}
-                        className={`hover:bg-blue-50 transition-all duration-150 ${
-                          idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                        className={`group hover:bg-blue-50 transition-all duration-150 ${
+                          idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                         }`}
                       >
-                        {row.getVisibleCells().map((cell) => (
-                          <td
-                            key={cell.id}
-                            className={`border-b border-r border-gray-200 px-4 py-3 ${
-                              cell.column.id === 'no'
-                                ? 'sticky left-0 bg-inherit z-10 font-semibold'
-                                : ''
-                            }`}
-                            style={{
-                              minWidth:
-                                cell.column.id === 'no' ? '70px' : '220px',
-                              ...(cell.column.id === 'no' && {
-                                boxShadow: '2px 0 8px -2px rgba(0,0,0,0.1)',
-                              }),
-                            }}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </td>
-                        ))}
+                        {(() => {
+                          const visibleCells = row.getVisibleCells()
+                          const orderedPinnedCellIds = visibleCells
+                            .filter((cell) =>
+                              pinnedColumnIds.includes(cell.column.id),
+                            )
+                            .map((cell) => cell.column.id)
+
+                          return visibleCells.map((cell) => {
+                            const isPinned = pinnedColumnIds.includes(
+                              cell.column.id,
+                            )
+                            const stickyLeft = getStickyLeft(
+                              cell.column.id,
+                              orderedPinnedCellIds,
+                            )
+
+                            return (
+                              <td
+                                key={cell.id}
+                                className={`border-b border-r border-gray-200 px-4 py-3 ${
+                                  isPinned
+                                    ? 'sticky z-[5] font-semibold group-hover:!bg-blue-50'
+                                    : ''
+                                }`}
+                                style={{
+                                  minWidth:
+                                    cell.column.id === 'no' ? '70px' : '220px',
+                                  left: isPinned ? stickyLeft : undefined,
+                                  backgroundColor: isPinned
+                                    ? idx % 2 === 0
+                                      ? '#ffffff'
+                                      : '#f9fafb'
+                                    : undefined,
+                                }}
+                              >
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                )}
+                              </td>
+                            )
+                          })
+                        })()}
                       </tr>
                     ))
                   )}

@@ -25,10 +25,15 @@ interface PlanSettingProps {
   onDateChange: (v: string) => void
   isLoading: boolean
   shift: Shift
+  onShiftChange: (v: Shift) => void
+
+  cycleTime: number
+  onCycleTimeChange: (v: number) => void
+  onSaveCycleTime: () => void
+
   models: ModelPlan[]
   activeModel: string
   newModelName: string
-  onShiftChange: (v: Shift) => void
   onModelTabChange: (id: string) => void
   onUpdatePlan: (modelId: string, ot: OrderType, value: number) => void
   onSave: () => void
@@ -44,10 +49,13 @@ export function PlanSetting({
   onDateChange,
   isLoading,
   shift,
+  onShiftChange,
+  cycleTime,
+  onCycleTimeChange,
+  onSaveCycleTime,
   models,
   activeModel,
   newModelName,
-  onShiftChange,
   onModelTabChange,
   onUpdatePlan,
   onSave,
@@ -58,6 +66,18 @@ export function PlanSetting({
   activeOrderTypes,
 }: PlanSettingProps) {
   const dateInputRef = useRef<HTMLInputElement>(null)
+
+  const showDatePickerIfSupported = (input: HTMLInputElement | null) => {
+    if (!input) return
+    const isFirefox = /firefox/i.test(window.navigator.userAgent)
+    if (isFirefox) return
+
+    try {
+      input.showPicker?.()
+    } catch {
+      // Ignore: browser may block programmatic picker in some contexts.
+    }
+  }
   const activeM = models.find((m) => m.id === activeModel) ?? models[0]
 
   const OT_NOTES: Record<string, string> = {
@@ -70,7 +90,7 @@ export function PlanSetting({
     <Card className='rounded-xl border shadow-sm'>
       {/* ── Header: Date + Shift ─────────────────────────────────── */}
       <CardHeader className='rounded-t-xl border-b bg-muted/40 px-3 py-2.5'>
-        <div className='flex items-center justify-between gap-4'>
+        <div className='flex flex-wrap items-center justify-between gap-4'>
           {/* Production Date */}
           <div className='flex items-center gap-2'>
             {isLoading ? (
@@ -86,21 +106,20 @@ export function PlanSetting({
                     type='date'
                     value={today}
                     onChange={(e) => onDateChange(e.target.value)}
-                    onClick={(e) => {
-                      const t = e.target as HTMLInputElement
-                      t.showPicker?.()
-                    }}
                     className='cursor-pointer rounded-lg border-2 border-gray-300 bg-white py-1.5 pl-3 pr-10 text-base font-medium transition-all hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
                   />
                   <Calendar
-                    className='absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer z-10'
+                    className='date-input-custom-icon absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer z-10'
                     aria-hidden='true'
-                    onClick={() => dateInputRef.current?.showPicker()}
+                    onClick={() =>
+                      showDatePickerIfSupported(dateInputRef.current)
+                    }
                   />
                 </div>
               </div>
             )}
           </div>
+
           <div className='flex items-center gap-2'>
             <Label className='text-base font-medium text-muted-foreground'>
               Shift
@@ -124,6 +143,38 @@ export function PlanSetting({
                   </SelectItem>
                 </SelectContent>
               </Select>
+            )}
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <Label className='text-base font-medium text-muted-foreground'>
+              Cycle Time
+            </Label>
+            {isLoading ? (
+              <Skeleton className='h-7 w-28' />
+            ) : (
+              <div className='flex items-center gap-2'>
+                <input
+                  type='number'
+                  min={0}
+                  placeholder='0'
+                  value={cycleTime === 0 ? '' : cycleTime}
+                  onFocus={(e) => e.currentTarget.select()}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    onCycleTimeChange(v === '' ? 0 : Number(v))
+                  }}
+                  className='h-9 w-28 rounded-lg border-2 border-gray-300 bg-white px-3 text-base font-medium transition-all hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={onSaveCycleTime}
+                  className='h-8 text-base'
+                >
+                  Save
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -208,16 +259,25 @@ export function PlanSetting({
                               <input
                                 type='number'
                                 min={0}
-                                value={activeM.plans[ot as OrderType]}
+                                placeholder='0'
+                                value={
+                                  planLocked
+                                    ? activeM.plans[ot as OrderType]
+                                    : activeM.plans[ot as OrderType] === 0
+                                      ? ''
+                                      : activeM.plans[ot as OrderType]
+                                }
                                 readOnly={planLocked}
-                                onChange={(e) =>
-                                  isInteractive &&
+                                onFocus={(e) => e.currentTarget.select()}
+                                onChange={(e) => {
+                                  if (!isInteractive) return
+                                  const v = e.target.value
                                   onUpdatePlan(
                                     activeM.id,
                                     ot as OrderType,
-                                    Number(e.target.value),
+                                    v === '' ? 0 : Number(v),
                                   )
-                                }
+                                }}
                                 className={cn(
                                   'h-9 w-full border-0 bg-transparent text-center text-2xl font-black text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
                                   planLocked && 'cursor-default select-none',

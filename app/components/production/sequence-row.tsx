@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowUp, ArrowDown, MoveRight } from 'lucide-react'
 import type { Sequence } from '@/types/sequence'
+import { formatJakartaDateTimeFull } from '@/lib/datetime'
 
 interface SequenceRowProps {
   sequence: Sequence
@@ -143,10 +144,14 @@ export function SequenceRow({
         {sequence.ORDER_TYPE ?? '-'}
       </td>
       <td className='px-1 md:px-4 py-2 md:py-3 text-[10px] md:text-sm text-left'>
-        {sequence.FTIME_RECEIVED}
+        {sequence.FTIME_RECEIVED
+          ? formatJakartaDateTimeFull(sequence.FTIME_RECEIVED)
+          : '-'}
       </td>
       <td className='px-1 md:px-4 py-2 md:py-3 text-[10px] md:text-sm text-left'>
-        {sequence.FTIME_PRINTED}
+        {sequence.FTIME_PRINTED
+          ? formatJakartaDateTimeFull(sequence.FTIME_PRINTED)
+          : '-'}
       </td>
       <td className='px-1 md:px-4 py-2 md:py-3 text-left'>
         {getStatusBadge()}
