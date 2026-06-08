@@ -82,8 +82,6 @@ export function PlanSetting({
 
   const OT_NOTES: Record<string, string> = {
     Assy: 'Qty is auto-derived from actual ALC data. Manual input not required.',
-    'Service Part':
-      'Reserved for future use. Not applicable for current production cycle.',
   }
 
   return (

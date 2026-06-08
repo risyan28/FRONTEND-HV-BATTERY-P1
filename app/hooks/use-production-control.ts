@@ -27,6 +27,15 @@ const genId = () => Math.random().toString(36).slice(2)
 
 const getTodayISO = () => getJakartaISODate()
 
+const normalizeOrderTypeName = (value: string): string => {
+  const raw = value.trim()
+  const upper = raw.toUpperCase()
+  if (upper === 'ASSY') return 'Assy'
+  if (upper === 'CKD') return 'CKD'
+  if (upper === 'SERVICE PART' || upper === 'SERVICEPART') return 'Service Part'
+  return raw
+}
+
 // Derive TabModels from ModelPlan[] for SummaryCards compatibility
 function toTabModels(models: ModelPlan[], activeOts: string[]): TabModels {
   const result: TabModels = { Assy: [], CKD: [], 'Service Part': [] }
@@ -128,10 +137,20 @@ export function useProductionControl() {
         setCycleTime(Number(cycleData?.cycleTime ?? 0))
 
         // Populate master lists
-        setOrderTypesFromApi(otData.map((o) => o.ORDER_TYPE))
-        setActiveOtNamesFromApi(
-          otData.filter((o) => o.IS_ACTIVE === 1).map((o) => o.ORDER_TYPE),
-        )
+        const allOts = otData.map((o) => normalizeOrderTypeName(o.ORDER_TYPE))
+        const activeOts = otData
+          .filter((o) => o.IS_ACTIVE === 1)
+          .map((o) => normalizeOrderTypeName(o.ORDER_TYPE))
+
+        if (!allOts.includes('Service Part')) {
+          allOts.push('Service Part')
+        }
+        if (!activeOts.includes('Service Part')) {
+          activeOts.push('Service Part')
+        }
+
+        setOrderTypesFromApi(allOts)
+        setActiveOtNamesFromApi(activeOts)
         setModelsFromApi(
           mdData.map((m) => ({
             name: m.FMODEL_BATTERY ?? '',
@@ -166,7 +185,7 @@ export function useProductionControl() {
             id: String(i + 1),
             name: m.FMODEL_BATTERY ?? '',
             plans: Object.fromEntries(
-              otData.map((o) => [o.ORDER_TYPE, 0]),
+              (allOts.length > 0 ? allOts : ORDER_TYPES).map((ot) => [ot, 0]),
             ) as Record<OrderType, number>,
             isDefault: m.IS_DEFAULT === 1,
           }))

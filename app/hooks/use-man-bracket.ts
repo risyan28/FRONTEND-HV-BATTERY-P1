@@ -9,7 +9,26 @@ import { useSocketStatus } from '@/hooks/use-socket-status'
 import { formatJakartaDateTimeFull } from '@/lib/datetime'
 
 export type OrderType = 'ASSY' | 'CKD' | 'SERVICE PART'
-export type Destination = 'ASSY' | 'CKD'
+export type Destination = 'ASSY' | 'CKD' | 'SERVICE PART'
+
+const normalizeDestination = (value: unknown): Destination => {
+  const normalized = String(value ?? '')
+    .trim()
+    .toUpperCase()
+
+  return normalized === 'CKD'
+    ? 'CKD'
+    : normalized === 'SERVICE PART'
+      ? 'SERVICE PART'
+      : 'ASSY'
+}
+
+const extractPackPartBattery = (barcode: string): string | null => {
+  const normalized = String(barcode ?? '')
+    .trim()
+    .toUpperCase()
+  return normalized.match(/[A-Z]\d{4}/)?.[0] ?? null
+}
 
 export interface Sequence {
   id: string
@@ -46,6 +65,8 @@ interface UseManBracketResult {
   isLoading: boolean
   isSubmitting: boolean
   showCompletePopup: boolean
+  showWarningPopup: boolean
+  warningNotice: string | null
   scanBarcode: string
   interlockOn: boolean
   manualDestination: Destination
@@ -76,6 +97,8 @@ export const useManBracket = (): UseManBracketResult => {
   const [completedSeqs, setCompletedSeqs] = useState<Sequence[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCompletePopup, setShowCompletePopup] = useState(false)
+  const [showWarningPopup, setShowWarningPopup] = useState(false)
+  const [warningNotice, setWarningNotice] = useState<string | null>(null)
   const [scanBarcode, setScanBarcode] = useState('')
   const [interlockOn, setInterlockOn] = useState<boolean>(
     () =>
@@ -97,6 +120,9 @@ export const useManBracket = (): UseManBracketResult => {
   const completedListRef = useRef<HTMLDivElement | null>(null)
   const scanCounterRef = useRef(1)
   const completePopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const warningPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
 
@@ -135,9 +161,7 @@ export const useManBracket = (): UseManBracketResult => {
 
       const mappedRecords: Sequence[] = records.map((record: any) => {
         const barcode = String(record.BARCODE ?? '')
-        const destination = (
-          record.DESTINATION === 'CKD' ? 'CKD' : 'ASSY'
-        ) as Destination
+        const destination = normalizeDestination(record.DESTINATION)
         const seqNo = barcode.match(/(\d{7})$/)?.[1] ?? '0000000'
 
         return {
@@ -197,6 +221,26 @@ export const useManBracket = (): UseManBracketResult => {
       }
     }, [])
 
+  const resolveDestinationFromBarcode = useCallback(
+    async (
+      barcode: string,
+      fallbackDestination: Destination,
+    ): Promise<Destination> => {
+      const packPartBattery = extractPackPartBattery(barcode)
+
+      if (packPartBattery === 'F7030') {
+        return 'SERVICE PART'
+      }
+
+      if (packPartBattery === 'F7040') {
+        return fallbackDestination
+      }
+
+      return fallbackDestination
+    },
+    [],
+  )
+
   const triggerCompletePopup = useCallback(() => {
     setShowCompletePopup(true)
 
@@ -208,6 +252,15 @@ export const useManBracket = (): UseManBracketResult => {
       setShowCompletePopup(false)
       completePopupTimerRef.current = null
     }, 3000)
+  }, [])
+
+  const dismissWarningPopup = useCallback(() => {
+    setShowWarningPopup(false)
+    setWarningNotice(null)
+    if (warningPopupTimerRef.current) {
+      clearTimeout(warningPopupTimerRef.current)
+      warningPopupTimerRef.current = null
+    }
   }, [])
 
   const markCurrentSeqCompleted = useCallback(
@@ -237,6 +290,10 @@ export const useManBracket = (): UseManBracketResult => {
     return () => {
       if (completePopupTimerRef.current) {
         clearTimeout(completePopupTimerRef.current)
+      }
+
+      if (warningPopupTimerRef.current) {
+        clearTimeout(warningPopupTimerRef.current)
       }
     }
   }, [])
@@ -331,9 +388,46 @@ export const useManBracket = (): UseManBracketResult => {
         return
       }
 
-      const resolvedDestination: Destination = interlockOn
-        ? ((await fetchAutoDestination()) ?? activeDestination)
-        : activeDestination
+      const packPartBattery = extractPackPartBattery(barcode)
+      const isManualServicePartWarning =
+        !interlockOn &&
+        activeDestination !== 'SERVICE PART' &&
+        packPartBattery === 'F7030'
+
+      const isManualServicePartMismatch =
+        !interlockOn &&
+        activeDestination === 'SERVICE PART' &&
+        packPartBattery === 'F7040'
+
+      if (isManualServicePartWarning || isManualServicePartMismatch) {
+        const warningMessage = isManualServicePartMismatch
+          ? 'THIS BARCODE IS FOR SERVICE PART - PREFIX F7030.'
+          : 'THIS BARCODE IS FOR ASSY/CKD - PREFIX F7040.'
+
+        if (warningPopupTimerRef.current) {
+          clearTimeout(warningPopupTimerRef.current)
+        }
+
+        setWarningNotice(warningMessage)
+        setShowWarningPopup(true)
+        warningPopupTimerRef.current = setTimeout(() => {
+          dismissWarningPopup()
+        }, 3000)
+
+        if (isManualServicePartWarning || isManualServicePartMismatch) {
+          return
+        }
+      } else {
+        setWarningNotice(null)
+        setShowWarningPopup(false)
+      }
+
+      const resolvedDestination = await resolveDestinationFromBarcode(
+        barcode,
+        interlockOn
+          ? ((await fetchAutoDestination()) ?? activeDestination)
+          : activeDestination,
+      )
 
       const seqNo =
         barcode.match(/(\d{7})$/)?.[1] ??
@@ -400,6 +494,7 @@ export const useManBracket = (): UseManBracketResult => {
       interlockOn,
       activeDestination,
       fetchAutoDestination,
+      resolveDestinationFromBarcode,
     ],
   )
 
@@ -513,7 +608,9 @@ export const useManBracket = (): UseManBracketResult => {
     isLoading,
     isSubmitting,
     showCompletePopup,
+    showWarningPopup,
     scanBarcode,
+    warningNotice,
     interlockOn,
     manualDestination,
     autoDestination,

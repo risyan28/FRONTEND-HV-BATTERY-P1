@@ -139,7 +139,7 @@ export function SettingsPanel({
                       <button
                         key={dest}
                         onClick={() => handleSetManualDestination(dest)}
-                        className={`flex-1 py-4 rounded-xl font-black text-2xl transition-all ${
+                        className={`flex-1 py-4 rounded-xl font-black text-md transition-all ${
                           manualDestination === dest
                             ? 'bg-blue-600 text-white shadow-lg scale-105'
                             : 'bg-slate-100 text-slate-500 border-2 border-slate-300 hover:border-blue-400 hover:text-blue-600'

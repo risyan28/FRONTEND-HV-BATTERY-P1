@@ -5,7 +5,7 @@ const api = createApi()
 export interface ManBracketRecord {
   FID: number
   BARCODE: string
-  DESTINATION: 'ASSY' | 'CKD' | string
+  DESTINATION: 'ASSY' | 'CKD' | 'SERVICE PART'
   FVALUE?: number
   START_TIME?: string | null
   COMPLETED_TIME?: string | null
@@ -48,7 +48,7 @@ export const manBracketApi = {
     return data?.data ?? null
   },
 
-  getDestinationConfig: async (): Promise<'ASSY' | 'CKD' | null> => {
+  getDestinationConfig: async (): Promise<'ASSY' | 'CKD' | 'SERVICE PART' | null> => {
     const { data } = await api.get<ApiResponse<{ destination?: string }>>(
       '/man-bracket/destination-config',
       {
@@ -64,12 +64,14 @@ export const manBracketApi = {
       ? 'CKD'
       : destination === 'ASSY'
         ? 'ASSY'
-        : null
+        : destination === 'SERVICE PART'
+          ? 'SERVICE PART'
+          : null
   },
 
   startProcess: async (payload: {
     barcode: string
-    destination: 'ASSY' | 'CKD'
+    destination: 'ASSY' | 'CKD' | 'SERVICE PART'
     startTime: Date
   }): Promise<number | undefined> => {
     const { data } = await api.post<ApiResponse<{ FID?: number }>>(

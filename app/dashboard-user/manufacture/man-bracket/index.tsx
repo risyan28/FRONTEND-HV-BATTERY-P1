@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import React from 'react'
-import { CheckCircle2, Settings } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
 import { AppHeader } from '@/components/app-header'
 import { LoadingScreen } from '@/components/loading-screen'
 import { useManBracket, type OrderType } from '@/hooks/use-man-bracket'
@@ -16,6 +16,8 @@ export function ManBracketPage(): React.ReactElement {
     isLoading,
     isSubmitting,
     showCompletePopup,
+    showWarningPopup,
+    warningNotice,
     scanBarcode,
     interlockOn,
     manualDestination,
@@ -58,6 +60,20 @@ export function ManBracketPage(): React.ReactElement {
             </h2>
             <p className='mt-3 text-2xl md:text-3xl font-semibold text-slate-600'>
               Returning to initial cycle...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {showWarningPopup && (
+        <div className='fixed inset-0 z-[75] flex items-center justify-center bg-black/50 px-4'>
+          <div className='w-full max-w-4xl rounded-3xl border-2 border-amber-400 bg-white px-10 py-12 md:px-14 md:py-14 shadow-2xl text-center'>
+            <AlertTriangle className='mx-auto mb-4 h-28 w-28 md:h-32 md:w-32 text-amber-500' />
+            <h2 className='text-4xl md:text-6xl font-black tracking-wide text-amber-700'>
+              WARNING
+            </h2>
+            <p className='mt-3 text-2xl md:text-3xl font-semibold text-slate-700'>
+              {warningNotice}
             </p>
           </div>
         </div>

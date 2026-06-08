@@ -1,7 +1,7 @@
 import type { Destination, OrderType } from '@/hooks/use-man-bracket'
 
 export const ORDER_TYPES: OrderType[] = ['ASSY', 'CKD', 'SERVICE PART']
-export const DESTINATIONS: Destination[] = ['ASSY', 'CKD']
+export const DESTINATIONS: Destination[] = ['ASSY', 'CKD', 'SERVICE PART']
 
 export const TYPE_STYLE: Record<
   OrderType,
