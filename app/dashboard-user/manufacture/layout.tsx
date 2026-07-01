@@ -40,7 +40,7 @@ export function DashboardLayout(): React.ReactElement {
   }
 
   return (
-    <div className='flex min-h-screen flex-col bg-zinc-100'>
+    <div className='flex h-screen flex-col overflow-hidden bg-zinc-100'>
       {/* Navigation Handler */}
       <NavigationHandler onNavigate={handleNavigation} />
 
@@ -74,7 +74,7 @@ export function DashboardLayout(): React.ReactElement {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className='flex-1'
+                className='flex-1 overflow-y-auto'
               >
                 <MainMenu />
               </motion.main>

@@ -1,4 +1,5 @@
 import {
+  Activity,
   ClipboardList,
   CheckCircle,
   BarChart2,
@@ -24,9 +25,12 @@ export function RealtimeStats({
 }: Props) {
   return (
     <div className='mb-4 bg-white rounded-lg'>
-      <div className='container mx-auto px-4 py-4'>
-        <div className='mb-3 flex items-center justify-between'>
-          <h2 className='text-lg md:text-xl font-bold'>Realtime Monitoring</h2>
+      <div className='container mx-auto px-4 py-2'>
+        <div className='mb-1.5 flex items-center gap-1.5'>
+          <Activity className='h-5 w-5 text-slate-600' />
+          <h2 className='text-base md:text-lg font-bold text-slate-800'>
+            Realtime Monitoring
+          </h2>
         </div>
 
         {/* Mobile View */}
