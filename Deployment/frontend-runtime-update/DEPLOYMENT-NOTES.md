@@ -2,17 +2,18 @@
 
 - Bundle mode: slim
 - Selected from: code-only update
-- Created at: 2026-05-29T07:45:56.936Z
-- Changed files: 7
+- Created at: 2026-07-01T01:54:32.603Z
+- Changed files: 8
 
 ## Changed Files
-- app/dashboard-user/manufacture/man-bracket/constants.ts
-- app/dashboard-user/manufacture/man-bracket/index.tsx
-- app/dashboard-user/manufacture/man-bracket/settings-panel.tsx
-- app/dashboard-user/manufacture/production-control/plan-setting.tsx
-- app/hooks/use-man-bracket.ts
-- app/hooks/use-production-control.ts
-- app/services/manBracketApi.ts
+- app/components/manufacture/dashboard/QuickAccess.tsx
+- app/components/manufacture/dashboard/RealtimeStats.tsx
+- app/components/manufacture/dashboard/SafetyCompliance.tsx
+- app/dashboard-user/manufacture/MainMenu.tsx
+- app/dashboard-user/manufacture/layout.tsx
+- app/dashboard-user/manufacture/station-config/index.tsx
+- app/services/stationConfigApi.ts
+- public/images/cq5dam.web.400.400.webp
 
 ## Deployment
 - This bundle is overlay-only. Extract on top of an existing frontend-runtime folder.
