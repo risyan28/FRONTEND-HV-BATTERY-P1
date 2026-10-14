@@ -4,6 +4,7 @@ node_modules/
 # Runtime deploy folder — only ignore build output & deps, NOT source files
 frontend-runtime/build/
 frontend-runtime/node_modules/
+Deployment/
 
 # Build outputs
 build/
@@ -47,6 +48,7 @@ Thumbs.db
 *.tar
 *.tar.gz
 *.zip
+*.7z
 
 # Local env — .env.example TETAP masuk GitHub (template, no secrets)
 .env
