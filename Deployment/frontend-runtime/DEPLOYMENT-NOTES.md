@@ -2,46 +2,55 @@
 
 - Bundle mode: full
 - Selected from: explicit --full
-- Created at: 2026-04-20T04:20:01.900Z
-- Changed files: 36
+- Created at: 2026-10-07T16:19:25.068Z
+- Changed files: 45
 
 ## Changed Files
-- app/components/andon-screen/clock.tsx
-- app/components/app-header.tsx
-- app/components/manufacture/dashboard/header.tsx
-- app/components/production/sequence-row.tsx
-- app/components/realtime/completed-section.tsx
+- .playwright-mcp/page-2026-08-14T02-11-22-355Z.yml
+- .playwright-mcp/page-2026-08-14T02-11-47-791Z.yml
+- .playwright-mcp/page-2026-08-14T02-15-55-383Z.yml
+- .playwright-mcp/page-2026-08-14T02-16-05-707Z.yml
+- .playwright-mcp/page-2026-08-14T02-18-22-021Z.yml
+- .playwright-mcp/page-2026-08-14T02-18-35-979Z.yml
+- .playwright-mcp/page-2026-08-14T02-19-10-344Z.yml
+- .playwright-mcp/page-2026-08-14T02-19-35-400Z.png
+- .playwright-mcp/page-2026-08-14T02-23-42-774Z.yml
+- .playwright-mcp/page-2026-08-14T02-38-00-181Z.yml
+- .playwright-mcp/page-2026-08-14T02-38-38-207Z.yml
+- .playwright-mcp/page-2026-08-14T02-38-50-909Z.yml
+- .playwright-mcp/page-2026-08-14T02-43-02-813Z.yml
+- .playwright-mcp/page-2026-08-14T02-43-09-949Z.yml
+- .playwright-mcp/page-2026-08-14T03-41-34-960Z.yml
+- .playwright-mcp/page-2026-08-14T03-41-52-794Z.yml
+- .playwright-mcp/page-2026-08-14T03-53-47-254Z.yml
+- .playwright-mcp/page-2026-08-14T03-54-06-804Z.yml
+- .playwright-mcp/page-2026-08-14T03-54-11-781Z.yml
+- .playwright-mcp/page-2026-08-14T03-54-30-026Z.yml
+- app/components/andon-screen/factory-layout.tsx
+- app/components/manufacture/dashboard/QuickAccess.tsx
+- app/components/production/sequence-table.tsx
 - app/components/realtime/processing-section.tsx
 - app/components/realtime/sequence-table.tsx
-- app/dashboard-user/manufacture/history-print/history-print.tsx
-- app/dashboard-user/manufacture/man-bracket/completed-panel.tsx
-- app/dashboard-user/manufacture/man-bracket/constants.ts
+- app/components/ui/advanced-data-table.tsx
 - app/dashboard-user/manufacture/man-bracket/index.tsx
 - app/dashboard-user/manufacture/man-bracket/processing-panel.tsx
 - app/dashboard-user/manufacture/man-bracket/settings-panel.tsx
-- app/dashboard-user/manufacture/production-control/generate-sequence.tsx
-- app/dashboard-user/manufacture/production-control/history-table.tsx
-- app/dashboard-user/manufacture/production-control/index.tsx
-- app/dashboard-user/manufacture/production-control/plan-setting.tsx
-- app/dashboard-user/manufacture/production-control/summary-cards.tsx
+- app/dashboard-user/manufacture/rfid-process/constants.ts
+- app/dashboard-user/manufacture/rfid-process/index.tsx
+- app/dashboard-user/manufacture/rfid-process/rfid-map-table.tsx
 - app/dashboard-user/manufacture/traceability-data/traceability-data-table.tsx
 - app/hooks/use-man-bracket.ts
-- app/hooks/use-print-history-query.ts
-- app/hooks/use-print-history.ts
-- app/hooks/use-production-control.ts
-- app/hooks/use-traceability-query.ts
-- app/hooks/use-traceability.ts
-- app/lib/api.ts
-- app/lib/auth.ts
-- app/lib/datetime.ts
-- app/lib/validation.ts
+- app/hooks/use-sequence-management.ts
+- app/hooks/useMenuItems.ts
+- app/root.tsx
+- app/routes.ts
+- app/routes/dashboard-user/manufacture/rfid-process.tsx
 - app/services/manBracketApi.ts
-- app/services/productionPlanApi.ts
-- app/types/print-history.ts
+- app/services/rfidApi.ts
+- package-lock.json
 - package.json
-- scripts/build-frontend-bundle.mjs
 - scripts/build-runtime-bundle.mjs
-- tsconfig.json
+- server.js
 
 ## Deployment
 - This bundle includes node_modules. Use this for first install or dependency changes.

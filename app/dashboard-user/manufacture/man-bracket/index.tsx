@@ -1,11 +1,10 @@
 ﻿'use client'
 
 import React from 'react'
-import { AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
+import { AlertCircle, AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
 import { AppHeader } from '@/components/app-header'
 import { LoadingScreen } from '@/components/loading-screen'
-import { useManBracket, type OrderType } from '@/hooks/use-man-bracket'
-import { ORDER_TYPES } from './constants'
+import { useManBracket } from '@/hooks/use-man-bracket'
 import { SettingsPanel } from './settings-panel'
 import { ProcessingPanel } from './processing-panel'
 import { CompletedPanel } from './completed-panel'
@@ -13,22 +12,28 @@ import { CompletedPanel } from './completed-panel'
 export function ManBracketPage(): React.ReactElement {
   const {
     completedSeqs,
+    completedCounts,
     isLoading,
     isSubmitting,
     showCompletePopup,
     showWarningPopup,
+    showScanBlockPopup,
     warningNotice,
     scanBarcode,
     interlockOn,
     manualDestination,
+    inputMode,
     showSettings,
     scanInputRef,
     completedListRef,
     currentSeq,
     activeDestination,
+    stdStock,
+    actBufferStock,
 
     setScanBarcode,
     setShowSettings,
+    setInputMode,
 
     handleToggleInterlock,
     handleSetManualDestination,
@@ -38,16 +43,6 @@ export function ManBracketPage(): React.ReactElement {
   } = useManBracket()
 
   const displayedBarcode = currentSeq?.barcode ?? scanBarcode
-
-  const completedByType = ORDER_TYPES.reduce(
-    (acc, type) => {
-      acc[type] = completedSeqs.filter(
-        (sequence) => sequence.orderType === type,
-      ).length
-      return acc
-    },
-    {} as Record<OrderType, number>,
-  )
 
   return (
     <div className='flex h-screen flex-col bg-zinc-100 overflow-hidden'>
@@ -79,10 +74,26 @@ export function ManBracketPage(): React.ReactElement {
         </div>
       )}
 
+      {showScanBlockPopup && (
+        <div className='fixed inset-0 z-[80] flex items-center justify-center bg-black/45 px-4'>
+          <div className='w-full max-w-lg rounded-3xl border-2 border-amber-300 bg-white px-8 py-10 md:px-10 md:py-12 shadow-2xl text-center'>
+            <AlertCircle className='mx-auto mb-4 h-20 w-20 md:h-24 md:w-24 text-amber-500' />
+            <h2 className='text-3xl md:text-4xl font-black tracking-wide text-amber-700'>
+              PROCESS IN PROGRESS
+            </h2>
+            <p className='mt-3 text-lg md:text-xl font-semibold text-slate-600'>
+              Complete the current process before scanning a new label.
+            </p>
+          </div>
+        </div>
+      )}
+
       <SettingsPanel
         showSettings={showSettings}
         interlockOn={interlockOn}
         manualDestination={manualDestination}
+        inputMode={inputMode}
+        setInputMode={setInputMode}
         scanInputRef={scanInputRef}
         setShowSettings={setShowSettings}
         handleToggleInterlock={handleToggleInterlock}
@@ -102,9 +113,12 @@ export function ManBracketPage(): React.ReactElement {
               currentSeq={currentSeq}
               activeDestination={activeDestination}
               interlockOn={interlockOn}
+              inputMode={inputMode}
               scanInputRef={scanInputRef}
               displayedBarcode={displayedBarcode}
               isSubmitting={isSubmitting}
+              stdStock={stdStock}
+              actBufferStock={actBufferStock}
               setScanBarcode={setScanBarcode}
               handleScanSubmit={handleScanSubmit}
               handleResetProcess={handleResetProcess}
@@ -121,7 +135,7 @@ export function ManBracketPage(): React.ReactElement {
 
             <CompletedPanel
               completedSeqs={completedSeqs}
-              completedByType={completedByType}
+              completedByType={completedCounts}
               completedListRef={completedListRef}
             />
           </div>

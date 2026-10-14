@@ -36,4 +36,8 @@ export default [
     '/dashboard-user/manufacture/man-bracket',
     'routes/dashboard-user/manufacture/man-bracket.tsx',
   ),
+  route(
+    '/dashboard-user/manufacture/rfid-process',
+    'routes/dashboard-user/manufacture/rfid-process.tsx',
+  ),
 ] satisfies RouteConfig

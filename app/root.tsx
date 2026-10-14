@@ -41,13 +41,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     },
   })
 
-  // Auto update when new version available
   useEffect(() => {
     if (needRefresh) {
-      console.log('🔄 PWA: New version available, updating...')
-      updateServiceWorker(true)
+      console.log('🔄 PWA: New version available')
     }
-  }, [needRefresh, updateServiceWorker])
+  }, [needRefresh])
 
   return (
     <html lang='en'>

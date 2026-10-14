@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useRef } from 'react'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, VisibilityState, Updater } from '@tanstack/react-table'
 import { Search, Calendar, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import * as XLSX from 'xlsx'
@@ -27,6 +27,9 @@ interface AdvancedDataTableProps<TData> {
   enableExcelDownload?: boolean
   excelFileName?: string
   frozenColumnIds?: string[]
+  columnVisibility?: VisibilityState
+  onColumnVisibilityChange?: (updater: Updater<VisibilityState>) => void
+  presetButtons?: React.ReactNode
 }
 
 export function AdvancedDataTable<TData>({
@@ -42,6 +45,9 @@ export function AdvancedDataTable<TData>({
   enableExcelDownload = false,
   excelFileName = 'data',
   frozenColumnIds = [],
+  columnVisibility,
+  onColumnVisibilityChange,
+  presetButtons,
 }: AdvancedDataTableProps<TData>) {
   const [globalFilter, setGlobalFilter] = useState('')
   const fromDateRef = useRef<HTMLInputElement>(null)
@@ -70,6 +76,9 @@ export function AdvancedDataTable<TData>({
       ...filteredRows.map((row) =>
         headers.map((key) => {
           const val = (row.original as any)[key]
+          if (typeof val === 'string' && val.startsWith('data:image/')) {
+            return '[image]'
+          }
           return val ?? ''
         }),
       ),
@@ -95,7 +104,9 @@ export function AdvancedDataTable<TData>({
     columns,
     state: {
       globalFilter,
+      ...(columnVisibility ? { columnVisibility } : {}),
     },
+    ...(onColumnVisibilityChange ? { onColumnVisibilityChange } : {}),
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -135,13 +146,13 @@ export function AdvancedDataTable<TData>({
   }
 
   return (
-    <div className='flex-1 flex flex-col gap-5 min-h-0 p-6'>
+    <div className='flex-1 flex flex-col gap-2 min-h-0 p-6'>
       {/* Date Filter & Search - Fixed, tidak scroll */}
-      <div className='flex flex-col gap-3 flex-shrink-0'>
+      <div className='flex flex-col gap-1 flex-shrink-0'>
         {showDateFilter && dateRange && setDateRange && onSearch && (
-          <div className='flex flex-col sm:flex-row gap-3 items-start sm:items-end'>
+          <div className='flex flex-col sm:flex-row gap-2 items-end'>
             <div className='flex flex-col'>
-              <label className='text-sm font-medium mb-1 text-gray-700'>
+              <label className='text-sm font-medium mb-0.5 text-gray-700'>
                 From Date
               </label>
               <div className='relative'>
@@ -163,7 +174,7 @@ export function AdvancedDataTable<TData>({
             </div>
 
             <div className='flex flex-col'>
-              <label className='text-sm font-medium mb-1 text-gray-700'>
+              <label className='text-sm font-medium mb-0.5 text-gray-700'>
                 To Date
               </label>
               <div className='relative'>
@@ -188,7 +199,7 @@ export function AdvancedDataTable<TData>({
               size='sm'
               onClick={onSearch}
               disabled={isSearching}
-              className='h-10 px-6 mt-1 sm:mt-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all'
+              className='h-10 px-6 mt-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all'
             >
               {isSearching ? (
                 <span className='flex items-center'>
@@ -247,7 +258,7 @@ export function AdvancedDataTable<TData>({
       ) : (
         <>
           {/* Pagination - Di atas table */}
-          <div className='flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 px-4 py-3 rounded-t-lg'>
+          <div className='flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 px-4 py-3 rounded-t-lg'>
             <div className='flex items-center gap-3'>
               <span className='text-sm font-semibold text-gray-800'>
                 Page {table.getState().pagination.pageIndex + 1} of{' '}
@@ -257,6 +268,12 @@ export function AdvancedDataTable<TData>({
                 {table.getFilteredRowModel().rows.length} rows
               </span>
             </div>
+
+            {/* Preset Buttons - Middle */}
+            {presetButtons && (
+              <div className='flex items-center gap-2'>{presetButtons}</div>
+            )}
+
             <div className='flex items-center gap-2'>
               <Button
                 variant='outline'

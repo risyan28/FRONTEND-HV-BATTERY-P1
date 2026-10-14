@@ -17,21 +17,33 @@ interface ApiResponse<T> {
   message?: string
 }
 
+export interface DestinationCount {
+  destination: string
+  count: number
+}
+
+interface CompletedResponse extends ApiResponse<ManBracketRecord[]> {
+  countsByDestination?: DestinationCount[]
+}
+
 export const manBracketApi = {
   api,
 
   getCompleted: async (params?: {
     fvalue?: number
     limit?: number
-  }): Promise<ManBracketRecord[]> => {
-    const { data } = await api.get<ApiResponse<ManBracketRecord[]>>(
-      '/man-bracket',
-      {
-        params,
-      },
-    )
+  }): Promise<{
+    records: ManBracketRecord[]
+    countsByDestination: DestinationCount[]
+  }> => {
+    const { data } = await api.get<CompletedResponse>('/man-bracket', {
+      params,
+    })
 
-    return Array.isArray(data?.data) ? data.data : []
+    return {
+      records: Array.isArray(data?.data) ? data.data : [],
+      countsByDestination: data?.countsByDestination ?? [],
+    }
   },
 
   getRecord: async (recordId: number): Promise<ManBracketRecord | null> => {
@@ -67,6 +79,25 @@ export const manBracketApi = {
         : destination === 'SERVICE PART'
           ? 'SERVICE PART'
           : null
+  },
+
+  getStock: async (): Promise<{
+    stdStock: number
+    bufferStock: number
+  }> => {
+    const { data } = await api.get<
+      ApiResponse<{ stdStock?: number; bufferStock?: number }>
+    >('/man-bracket/stock', {
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+      },
+    })
+
+    return {
+      stdStock: Number(data?.data?.stdStock) || 0,
+      bufferStock: Number(data?.data?.bufferStock) || 0,
+    }
   },
 
   startProcess: async (payload: {

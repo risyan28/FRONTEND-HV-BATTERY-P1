@@ -61,7 +61,7 @@ export const SequenceTable = memo(function SequenceTable({
           {/* Queue Section */}
           <div
             ref={queueRef}
-            className='h-[200px] md:h-[300px] overflow-y-auto'
+            className='h-[300px] md:h-[330px] overflow-y-auto'
           >
             <table className='w-full table-fixed'>
               <SequenceTableColumns />
@@ -85,7 +85,7 @@ export const SequenceTable = memo(function SequenceTable({
           </div>
 
           {/* Current Sequence */}
-          <table className='w-full table-fixed'>
+          <table className='w-full table-fixed sticky bottom-0 z-10 bg-white'>
             <SequenceTableColumns />
             <tbody>
               {current && (
@@ -101,8 +101,11 @@ export const SequenceTable = memo(function SequenceTable({
           {/* Completed Section */}
           <div
             ref={historyRef}
-            className='h-[200px] md:h-[300px] overflow-y-auto'
+            className='h-[300px] md:h-[300px] overflow-y-auto mt-4 border-t'
           >
+            <div className='bg-gray-100 px-4 py-1 text-xs font-bold text-gray-500'>
+              RECENTLY COMPLETED
+            </div>
             <table className='w-full table-fixed'>
               <SequenceTableColumns />
               <tbody>

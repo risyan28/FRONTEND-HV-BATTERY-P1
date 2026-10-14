@@ -1,32 +1,75 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
-import type { Sequence } from '@/types/sequence'
+import { List, useListRef, type RowComponentProps } from 'react-window'
 import { formatJakartaDateTimeFull } from '@/lib/datetime'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import type { Sequence } from '@/types/sequence'
+import { useMemo } from 'react'
 
 interface SequenceTableProps {
   data: Sequence[]
+}
+
+interface RowProps {
+  data: Sequence[]
+  isMobile: boolean
+  columnWidths: string[]
+  mobileColumnWidths: string[]
+}
+
+const Row = ({
+  index,
+  style,
+  data,
+  isMobile,
+  columnWidths,
+  mobileColumnWidths,
+}: RowComponentProps<RowProps>) => {
+  const row = data[index]
+  if (!row) return null
+  return (
+    <div style={style} className='flex border-b border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'>
+      {/* Row content simplified without framer-motion */}
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[0] : columnWidths[0] }} className='min-w-0 p-0.5 md:p-2 text-center font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 text-[10px] md:text-lg'>
+        {row.FBARCODE?.slice(-7)}
+      </div>
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[1] : columnWidths[1] }} className='min-w-0 p-0.5 md:p-2 text-center bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 truncate font-bold text-[9px] md:text-lg'>
+        {isMobile ? row.FMODEL_BATTERY.split('-')[0] : row.FMODEL_BATTERY}
+      </div>
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[2] : columnWidths[2] }} className='min-w-0 p-0.5 md:p-2 text-center bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 truncate font-bold text-[9px] md:text-lg'>
+        {row.FSEQ_K0}
+      </div>
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[3] : columnWidths[3] }} className='min-w-0 p-0.5 md:p-2 text-center bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 truncate font-bold text-[9px] md:text-lg'>
+        {row.FBODY_NO_K0}
+      </div>
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[4] : columnWidths[4] }} className='min-w-0 p-0.5 md:p-2 text-center font-mono text-[9px] md:text-xl font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 truncate'>
+        {row.FBARCODE}
+      </div>
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[5] : columnWidths[5] }} className='min-w-0 p-0.5 md:p-2 text-center font-mono font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 truncate text-[9px] md:text-xl'>
+        {row.FTIME_RECEIVED ? formatJakartaDateTimeFull(row.FTIME_RECEIVED) : '-'}
+      </div>
+      <div style={{ flexBasis: isMobile ? mobileColumnWidths[6] : columnWidths[6] }} className='min-w-0 p-0.5 md:p-2 text-center bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-[9px] md:text-lg'>
+        {row.ORDER_TYPE ?? '-'}
+      </div>
+    </div>
+  )
 }
 
 export function SequenceTable({ data }: SequenceTableProps) {
   const headers = [
     'NO SEQ',
     'TYPE BATTERY',
-    'KO SEQ',
+    'K0 SEQ',
     'NO BODY',
     'BARCODE',
     'TIME RECEIVED',
     'DATA FROM',
   ]
-  const mobileHeaders = ['SEQ', 'TYPE', 'KO', 'BODY', 'BARCODE', 'TIME', 'FROM']
-  // Desktop widths
+  const mobileHeaders = ['SEQ', 'TYPE', 'K0', 'BODY', 'BARCODE', 'TIME', 'FROM']
   const columnWidths = ['10%', '10%', '10%', '10%', '25%', '25%', '10%']
-  // Mobile widths - wider for barcode and time
   const mobileColumnWidths = ['8%', '10%', '8%', '8%', '30%', '28%', '8%']
   const containerRef = useRef<HTMLDivElement>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [isMobile, setIsMobile] = useState(false)
 
-  // Detect mobile screen
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -36,25 +79,43 @@ export function SequenceTable({ data }: SequenceTableProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // bikin data terurut sebelum di-map
-  const sortedData = [...data].sort((a, b) => {
-    const timeA = a.FID_ADJUST
-    const timeB = b.FID_ADJUST
-    return sortOrder === 'desc' ? timeA - timeB : timeB - timeA
-  })
+  const sortedData = useMemo(() => {
+    return [...data].sort((a, b) => {
+      const timeA = a.FID_ADJUST
+      const timeB = b.FID_ADJUST
+      return sortOrder === 'desc' ? timeB - timeA : timeA - timeB
+    })
+  }, [data, sortOrder])
 
-  // Auto-scroll ke bawah saat data update
-  useEffect(() => {
-    if (containerRef.current) {
-      // scroll ke paling bawah hanya sekali (saat mount)
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
+  const listRef = useListRef(null)
+
+  const scrollToBottom = useCallback(() => {
+    if (sortedData.length > 0) {
+      listRef.current?.scrollToRow({
+        index: sortedData.length - 1,
+        align: 'end',
+        behavior: 'auto',
+      })
     }
-  }, []) // kosong → cuma sekali
+  }, [sortedData.length, listRef])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [scrollToBottom])
+
+  const rowProps = useMemo(
+    () => ({
+      data: sortedData,
+      isMobile,
+      columnWidths,
+      mobileColumnWidths,
+    }),
+    [sortedData, isMobile],
+  )
 
   return (
     <div className='flex-[80] md:flex-[80] rounded-lg border border-border overflow-hidden shadow-sm flex flex-col h-full'>
       <div className='flex flex-col h-full overflow-hidden'>
-        {/* Header */}
         <div className='flex text-lg font-bold bg-gray-400 h-7 md:h-12'>
           {headers.map((header, index) => (
             <div
@@ -82,155 +143,17 @@ export function SequenceTable({ data }: SequenceTableProps) {
           ))}
         </div>
 
-        {/* Content */}
-        <div
-          ref={containerRef}
-          className='flex-1 bg-white dark:bg-slate-800 overflow-y-auto overflow-x-hidden w-full flex flex-col-reverse'
-        >
-          <div className=''>
-            <AnimatePresence mode='popLayout'>
-              {[...sortedData]
-                .reverse() // render dibalik → newest di bawah
-                .map((row, index) => (
-                  <motion.div
-                    key={row.FID}
-                    className='flex border-b border-slate-200 dark:border-slate-600 
-                           hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors overflow-hidden'
-                    initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.05,
-                      type: 'spring',
-                      stiffness: 100,
-                    }}
-                    layout
-                    whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-                  >
-                    {/* NO SEQ */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[0]
-                          : columnWidths[0],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center font-bold 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 text-[10px] md:text-lg'
-                    >
-                      {row.FBARCODE?.slice(-7)}
-                    </div>
-
-                    {/* TYPE BATTERY */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[1]
-                          : columnWidths[1],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-[9px] md:text-lg'
-                    >
-                      <span className='hidden md:inline'>
-                        {row.FMODEL_BATTERY}
-                      </span>
-                      <span className='md:hidden'>
-                        {row.FMODEL_BATTERY.split('-')[0]}
-                      </span>
-                    </div>
-
-                    {/* KO SEQ */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[2]
-                          : columnWidths[2],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-[9px] md:text-lg'
-                    >
-                      {row.FSEQ_K0}
-                    </div>
-
-                    {/* NO BODY */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[3]
-                          : columnWidths[3],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 truncate font-bold text-[9px] md:text-lg'
-                    >
-                      {row.FBODY_NO_K0}
-                    </div>
-
-                    {/* BARCODE */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[4]
-                          : columnWidths[4],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center font-mono text-[9px] md:text-xl font-bold 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 
-                             overflow-hidden truncate'
-                    >
-                      {row.FBARCODE}
-                    </div>
-
-                    {/* TIME RECEIVED */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[5]
-                          : columnWidths[5],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center font-mono font-bold 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                             border-r border-slate-200 dark:border-slate-600 last:border-r-0 
-                             overflow-hidden truncate text-[9px] md:text-xl'
-                    >
-                      {row.FTIME_RECEIVED
-                        ? formatJakartaDateTimeFull(row.FTIME_RECEIVED)
-                        : '-'}
-                    </div>
-
-                    {/* DATA FROM */}
-                    <div
-                      style={{
-                        flexBasis: isMobile
-                          ? mobileColumnWidths[6]
-                          : columnWidths[6],
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                      className='min-w-0 p-0.5 md:p-2 text-center 
-                             bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-[9px] md:text-lg'
-                    >
-                      {row.ORDER_TYPE ?? '-'}
-                    </div>
-                  </motion.div>
-                ))}
-            </AnimatePresence>
-          </div>
+        <div ref={containerRef} className='flex-1 bg-white dark:bg-slate-800 w-full min-h-0'>
+          <List
+            rowCount={sortedData.length}
+            rowHeight={isMobile ? 30 : 50}
+            rowComponent={Row}
+            rowProps={rowProps}
+            defaultHeight={500}
+            listRef={listRef}
+            onResize={scrollToBottom}
+            className='w-full h-full'
+          />
         </div>
       </div>
     </div>

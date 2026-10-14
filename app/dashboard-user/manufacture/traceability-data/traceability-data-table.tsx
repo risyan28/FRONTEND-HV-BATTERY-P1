@@ -1,10 +1,125 @@
 'use client'
 
-import { useMemo } from 'react'
-import type { ColumnDef } from '@tanstack/react-table'
+import { useMemo, useState } from 'react'
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import type { TraceabilityData } from '@/types/traceability'
 import { AdvancedDataTable } from '@/components/ui/advanced-data-table'
 import { formatJakartaDateTimeFull } from '@/lib/datetime'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
+function toImageUrl(value: unknown): string | null {
+  if (typeof value === 'string' && value.startsWith('data:image/')) {
+    return value
+  }
+  if (value === null || typeof value !== 'object') {
+    return null
+  }
+  const bufferLike = value as { type: string; data: number[] }
+  if (bufferLike.type === 'Buffer' && Array.isArray(bufferLike.data)) {
+    const base64 = new Uint8Array(bufferLike.data).reduce(
+      (acc, byte) => acc + String.fromCharCode(byte),
+      '',
+    )
+    return `data:image/jpeg;base64,${btoa(base64)}`
+  }
+  return null
+}
+
+// Helper function to generate preset visibility configurations
+function generatePresetVisibility(
+  allColumnIds: string[],
+  preset:
+    | 'module'
+    | 'manual'
+    | 'inspection'
+    | 'final_judgement'
+    | 'ecu_id'
+    | 'all',
+): VisibilityState {
+  const visibility: VisibilityState = {}
+
+  // Core columns that MUST be visible in ALL presets
+  const coreColumns = [
+    'no',
+    'PACK_ID',
+    'MODULE_1',
+    'MODULE_2',
+    'OVERALL_JUDGEMENT',
+    'PROD_DATE',
+  ]
+
+  // Define column categories based on keyword patterns
+  const moduleColumns = [
+    ...coreColumns,
+    ...allColumnIds.filter(
+      (col) =>
+        col.includes('Module') ||
+        col.includes('_Module') ||
+        col.includes('MODULE_1') ||
+        col.includes('MODULE_2'),
+    ),
+  ]
+
+  const manualWorkColumns = [
+    ...coreColumns,
+    ...allColumnIds.filter(
+      (col) =>
+        col.includes('_Angle') ||
+        col.includes('_Torque') ||
+        col.includes('_Result'),
+    ),
+  ]
+
+  const inspectionColumns = [
+    ...coreColumns,
+    ...allColumnIds.filter(
+      (col) => col.includes('_InspMachine') && col !== 'ID_InspMachine',
+    ),
+  ]
+
+  const finalJudgementColumns = [
+    ...coreColumns,
+    ...allColumnIds.filter((col) => col.includes('_FINAL_JUDGE')),
+  ]
+  // Add camera images to final judgement if they exist
+  if (allColumnIds.includes('CAM_IMG1')) {
+    finalJudgementColumns.push('CAM_IMG1')
+  }
+  if (allColumnIds.includes('CAM_IMG2')) {
+    finalJudgementColumns.push('CAM_IMG2')
+  }
+
+  const ecuIdColumns = [
+    'no',
+    'PACK_ID',
+    'MODULE_1',
+    'MODULE_2',
+    ...allColumnIds.filter((col) => col === 'ECU_ID'),
+    'OVERALL_JUDGEMENT',
+    'PROD_DATE',
+  ]
+
+  // Apply preset visibility
+  const presetColumns =
+    preset === 'module'
+      ? moduleColumns
+      : preset === 'manual'
+        ? manualWorkColumns
+        : preset === 'inspection'
+          ? inspectionColumns
+          : preset === 'final_judgement'
+            ? finalJudgementColumns
+            : preset === 'ecu_id'
+              ? ecuIdColumns
+              : allColumnIds
+
+  allColumnIds.forEach((col) => {
+    visibility[col] = presetColumns.includes(col)
+  })
+
+  return visibility
+}
 
 export function TraceabilityDataTable({
   data,
@@ -25,6 +140,36 @@ export function TraceabilityDataTable({
   searchByDate: () => Promise<void>
   enableExcelDownload?: boolean
 }) {
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
+  const [previewTitle, setPreviewTitle] = useState('')
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [activePreset, setActivePreset] = useState<string>('all')
+
+  const handlePresetSelect = (
+    preset:
+      | 'module'
+      | 'manual'
+      | 'inspection'
+      | 'final_judgement'
+      | 'ecu_id'
+      | 'all',
+  ) => {
+    if (columns.length > 0) {
+      const columnIds = columns
+        .map((col) => {
+          if ('id' in col && col.id) return col.id
+          if ('accessorKey' in col && col.accessorKey)
+            return col.accessorKey as string
+          return undefined
+        })
+        .filter((id): id is string => id !== undefined)
+
+      const newVisibility = generatePresetVisibility(columnIds, preset)
+      setColumnVisibility(newVisibility)
+      setActivePreset(preset)
+    }
+  }
+
   // Generate columns dynamically from first data item
   const columns: ColumnDef<TraceabilityData>[] = useMemo(() => {
     // Default columns when no data
@@ -116,6 +261,26 @@ export function TraceabilityDataTable({
         header: key,
         cell: ({ row }) => {
           const value = row.getValue(key)
+
+          if (key === 'CAM_IMG1' || key === 'CAM_IMG2') {
+            const imgSrc = toImageUrl(value)
+            if (imgSrc) {
+              return (
+                <img
+                  src={imgSrc}
+                  alt={key}
+                  className='w-12 h-12 object-cover rounded cursor-pointer'
+                  onClick={() => {
+                    setPreviewSrc(imgSrc)
+                    setPreviewTitle(key)
+                  }}
+                />
+              )
+            }
+            return (
+              <div className='text-sm whitespace-nowrap text-gray-700'>-</div>
+            )
+          }
 
           // Convert numeric 0/1 to OK/NG for specific columns
           if (
@@ -219,20 +384,143 @@ export function TraceabilityDataTable({
     return dynamicColumns
   }, [data])
 
+  // Initialize columnVisibility once when columns are ready
+  const columnsInitialized = useMemo(() => {
+    if (
+      columns.length > 0 &&
+      activePreset === 'all' &&
+      Object.keys(columnVisibility).length === 0
+    ) {
+      // Initialize with all columns visible on first load
+      const initialVisibility: VisibilityState = {}
+      columns.forEach((col) => {
+        if ('id' in col && col.id) {
+          initialVisibility[col.id] = true
+        } else if ('accessorKey' in col && col.accessorKey) {
+          initialVisibility[col.accessorKey as string] = true
+        }
+      })
+      setColumnVisibility(initialVisibility)
+    }
+  }, [columns, activePreset, columnVisibility])
+
   return (
-    <AdvancedDataTable
-      data={filteredData}
-      columns={columns}
-      frozenColumnIds={['PACK_ID']}
-      loading={loading}
-      isSearching={isSearching}
-      showDateFilter={true}
-      dateRange={dateRange}
-      setDateRange={setDateRange}
-      onSearch={searchByDate}
-      globalFilterPlaceholder='Search all columns...'
-      enableExcelDownload={enableExcelDownload}
-      excelFileName='traceability-data'
-    />
+    <>
+      <AdvancedDataTable
+        data={filteredData}
+        columns={columns}
+        frozenColumnIds={['PACK_ID']}
+        loading={loading}
+        isSearching={isSearching}
+        showDateFilter={true}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        onSearch={searchByDate}
+        globalFilterPlaceholder='Search all columns...'
+        enableExcelDownload={enableExcelDownload}
+        excelFileName='traceability-data'
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        presetButtons={
+          <div className='flex flex-wrap gap-2 items-center'>
+            <Button
+              size='sm'
+              variant={activePreset === 'all' ? 'default' : 'outline'}
+              onClick={() => handlePresetSelect('all')}
+              className={`text-xs h-8 ${
+                activePreset === 'all'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'border-blue-300 text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              ALL
+            </Button>
+            <Button
+              size='sm'
+              variant={activePreset === 'module' ? 'default' : 'outline'}
+              onClick={() => handlePresetSelect('module')}
+              className={`text-xs h-8 ${
+                activePreset === 'module'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'border-blue-300 text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              Module Inspection
+            </Button>
+            <Button
+              size='sm'
+              variant={activePreset === 'ecu_id' ? 'default' : 'outline'}
+              onClick={() => handlePresetSelect('ecu_id')}
+              className={`text-xs h-8 ${
+                activePreset === 'ecu_id'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'border-blue-300 text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              ECU ID
+            </Button>
+            <Button
+              size='sm'
+              variant={activePreset === 'manual' ? 'default' : 'outline'}
+              onClick={() => handlePresetSelect('manual')}
+              className={`text-xs h-8 ${
+                activePreset === 'manual'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'border-blue-300 text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              Manual Work
+            </Button>
+            <Button
+              size='sm'
+              variant={activePreset === 'inspection' ? 'default' : 'outline'}
+              onClick={() => handlePresetSelect('inspection')}
+              className={`text-xs h-8 ${
+                activePreset === 'inspection'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'border-blue-300 text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              Inspection Module
+            </Button>
+            <Button
+              size='sm'
+              variant={
+                activePreset === 'final_judgement' ? 'default' : 'outline'
+              }
+              onClick={() => handlePresetSelect('final_judgement')}
+              className={`text-xs h-8 ${
+                activePreset === 'final_judgement'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'border-blue-300 text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              Final Judgement
+            </Button>
+          </div>
+        }
+      />
+
+      <Dialog
+        open={previewSrc !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreviewSrc(null)
+            setPreviewTitle('')
+          }
+        }}
+      >
+        <DialogContent className='sm:max-w-3xl'>
+          <DialogTitle>{previewTitle}</DialogTitle>
+          {previewSrc && (
+            <img
+              src={previewSrc}
+              alt='Preview'
+              className='max-h-[70vh] w-auto mx-auto'
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

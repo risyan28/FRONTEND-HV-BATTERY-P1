@@ -1,5 +1,5 @@
 // hooks/useMenuItems.ts
-import type { LucideIcon } from 'lucide-react'
+import { Radio, type LucideIcon } from 'lucide-react'
 
 export interface MenuItem {
   icon: LucideIcon | string
@@ -51,6 +51,12 @@ export function useMenuItems(): MenuItem[] {
       icon: '/images/man-bracket.png',
       label: 'Man Bracket Screen',
       href: '/dashboard-user/manufacture/man-bracket',
+      children: [],
+    },
+    {
+      icon: Radio,
+      label: 'RFID Process',
+      href: '/dashboard-user/manufacture/rfid-process',
       children: [],
     },
     {

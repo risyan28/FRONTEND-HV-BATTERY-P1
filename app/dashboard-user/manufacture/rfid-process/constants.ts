@@ -1,0 +1,12 @@
+export const STATIONS = [
+  'ALL',
+  'UNLOADING',
+  'MAN_ASSY_1',
+  'MAN_ASSY_2',
+  'MAN_ASSY_3',
+  'MAN_ASSY_4',
+  'MAN_ASSY_5',
+  'SHOP_MAN_ASSY_1',
+  'FINAL_JUDGEMENT',
+  'MAN_BRACKET',
+]

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { SequenceState, ConfirmDialogState } from '@/types/sequence'
 import { sequenceApi } from '@/services/sequenceApi'
+import { getSocket, subscribeRoom, unsubscribeRoom } from '@/lib/socket'
 import { toast } from 'sonner'
 import { handleError } from '@/lib/error-handler'
 import logger from '@/lib/logger'
@@ -68,7 +69,19 @@ export const useSequenceManagement = () => {
   useEffect(() => {
     fetchSequences()
 
+    const socket = getSocket()
+    subscribeRoom('sequences')
+
+    const handleUpdate = (payload: SequenceState) => {
+      logger.debug('Realtime sequence update received')
+      setSequences(payload)
+    }
+
+    socket.on('sequences:update', handleUpdate)
+
     return () => {
+      socket.off('sequences:update', handleUpdate)
+      unsubscribeRoom('sequences')
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current)
       }

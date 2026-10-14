@@ -100,6 +100,7 @@ const getStationState = (
   )
 
   const { status: procStatus, source } = bestProcess
+  const sourceNorm = (source || '').toLowerCase()
 
   // ✅ PRIORITAS 3: Fault → jadi MTN call
   if (procStatus === 'fault') {
@@ -107,7 +108,7 @@ const getStationState = (
   }
 
   // ✅ PRIORITAS 4: Status normal
-  if (source === 'limit_switch') {
+  if (sourceNorm === 'limit_switch') {
     return {
       bgColor: '#0d6e18',
       callType: null,
@@ -147,11 +148,16 @@ export const FactoryLayout: FC<Props> = ({
   const STATION_REMAP: Record<string, string> = {
     'UN LOADING': 'MODULE INSPECT',
     'STACK LOADING': 'MODULE INSPECT',
-    CHARGING: 'INSPECT',
   }
+  const remapStation = (name: string) =>
+    STATION_REMAP[name.trim().toUpperCase()] ?? name
   const mappedActiveCalls = activeCalls.map((c) => ({
     ...c,
-    station: STATION_REMAP[c.station.trim().toUpperCase()] ?? c.station,
+    station: remapStation(c.station),
+  }))
+  const mappedProcessStatuses = processStatuses.map((p) => ({
+    ...p,
+    station: remapStation(p.station),
   }))
 
   useEffect(() => {
@@ -252,7 +258,7 @@ export const FactoryLayout: FC<Props> = ({
             const x = 20 + i * (boxWidth + spacing)
             const y = 10
             const state = label
-              ? getStationState(label, mappedActiveCalls, processStatuses)
+              ? getStationState(label, mappedActiveCalls, mappedProcessStatuses)
               : { bgColor: '#00ff04', callType: null, isBlinking: false }
 
             return (
@@ -284,7 +290,7 @@ export const FactoryLayout: FC<Props> = ({
             const x = 30 + i * (boxWidth + spacing) + boxWidth
             const y = 300
             const state = label
-              ? getStationState(label, mappedActiveCalls, processStatuses)
+              ? getStationState(label, mappedActiveCalls, mappedProcessStatuses)
               : { bgColor: '#00ff04', callType: null, isBlinking: false }
 
             return (
@@ -361,7 +367,7 @@ export const FactoryLayout: FC<Props> = ({
   for (let i = 0; i < leftLabels.length; i++) {
     const label = leftLabels[i]
     const state = label
-      ? getStationState(label, mappedActiveCalls, processStatuses)
+      ? getStationState(label, mappedActiveCalls, mappedProcessStatuses)
       : { bgColor: '#00ff04', callType: null, isBlinking: false }
     leftBoxes.push({
       y: currentYLeft,
@@ -391,7 +397,7 @@ export const FactoryLayout: FC<Props> = ({
   for (let i = 0; i < rightLabels.length; i++) {
     const label = rightLabels[i]
     const state = label
-      ? getStationState(label, mappedActiveCalls, processStatuses)
+      ? getStationState(label, mappedActiveCalls, mappedProcessStatuses)
       : { bgColor: '#00ff04', callType: null, isBlinking: false }
     rightBoxes.push({
       y: currentY,

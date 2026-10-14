@@ -11,9 +11,12 @@ interface ProcessingPanelProps {
   currentSeq: Sequence | null
   activeDestination: Destination
   interlockOn: boolean
+  inputMode: 'usb' | 'serial'
   scanInputRef: React.RefObject<HTMLInputElement | null>
   displayedBarcode: string
   isSubmitting: boolean
+  stdStock?: number
+  actBufferStock?: number
   setScanBarcode: (value: string) => void
   handleScanSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>
   handleResetProcess: () => Promise<void>
@@ -24,9 +27,12 @@ export function ProcessingPanel({
   currentSeq,
   activeDestination,
   interlockOn,
+  inputMode,
   scanInputRef,
   displayedBarcode,
   isSubmitting,
+  stdStock = 150,
+  actBufferStock = 42,
   setScanBarcode,
   handleScanSubmit,
   handleResetProcess,
@@ -58,8 +64,9 @@ export function ProcessingPanel({
           onChange={(event) => setScanBarcode(event.target.value)}
           placeholder='Scan or type barcode...'
           readOnly={Boolean(currentSeq)}
-          autoFocus
-          className='h-16 sm:h-16 !text-3xl sm:!text-3xl md:!text-4xl !font-black !leading-none !bg-white dark:!bg-white !text-black dark:!text-black placeholder:!text-slate-500 read-only:cursor-not-allowed read-only:opacity-80'
+          disabled={inputMode === 'serial' && !currentSeq}
+          autoFocus={inputMode !== 'serial'}
+          className='h-16 sm:h-16 !text-3xl sm:!text-3xl md:!text-4xl !font-black !leading-none !bg-white dark:!bg-white !text-black dark:!text-black placeholder:!text-slate-500 read-only:cursor-not-allowed read-only:opacity-80 disabled:cursor-not-allowed disabled:opacity-50'
           style={{
             backgroundColor: '#ffffff',
             color: '#000000',
@@ -75,7 +82,7 @@ export function ProcessingPanel({
         </Button>
         <Button
           type='submit'
-          disabled={Boolean(currentSeq)}
+          disabled={isSubmitting}
           className='h-14 sm:h-16 px-6 sm:px-8 text-xl sm:text-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-500 disabled:text-slate-200 disabled:cursor-not-allowed'
         >
           Enter
@@ -88,6 +95,18 @@ export function ProcessingPanel({
             Processing Now
           </h2>
           <div className='flex items-center gap-2'>
+            <span
+              className={`flex items-center gap-1.5 font-bold text-xs px-2.5 py-1 rounded-lg ${
+                inputMode === 'serial'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                  : 'bg-slate-200 text-slate-600 border border-slate-300'
+              }`}
+            >
+              {inputMode === 'serial' && (
+                <span className='w-2 h-2 rounded-full bg-blue-500 animate-pulse' />
+              )}
+              Scan Mode: {inputMode === 'serial' ? 'SERIAL' : 'USB'}
+            </span>
             {interlockOn ? (
               <span className='flex items-center gap-1.5 font-bold text-xs px-2.5 py-1 rounded-lg bg-green-100 text-green-700 border border-green-400'>
                 <span className='w-2 h-2 rounded-full bg-green-500 animate-pulse' />
@@ -113,40 +132,71 @@ export function ProcessingPanel({
           </div>
         </div>
 
-        <div className='flex-1 relative flex justify-center bg-yellow-400 items-center rounded-md mx-10 my-10 mb-10 text-center px-4 py-2'>
-          {currentSeq ? (
-            <div className='text-center w-full max-w-6xl'>
-              {currentSeq.orderType === 'SERVICE PART' ? (
-                <div
-                  className='font-black text-black tracking-widest leading-none flex flex-col items-center'
-                  style={{ fontSize: 'clamp(3rem, 14vw, 16rem)' }}
-                >
-                  <span>SERVICE</span>
-                  <span>PART</span>
-                </div>
-              ) : (
-                <div
-                  className='font-black text-black tracking-widest'
-                  style={{
-                    fontSize: 'clamp(8rem, 25vw, 25rem)',
-                    lineHeight: 1,
-                  }}
-                >
-                  {currentProcessLabel}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className='bg-slate-50 rounded-xl p-4 sm:p-8 text-center text-slate-400 border-2 border-dashed border-slate-200 h-full flex flex-col justify-center w-full'>
-              <AlertCircle className='w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-4 text-slate-300' />
-              <div className='text-lg sm:text-xl font-medium mb-2'>
-                No Active Man Bracket Process
+        <div className='flex-1 flex gap-2 min-h-0 mx-3 my-3'>
+          <div className='flex-1 relative flex justify-center bg-yellow-400 items-center rounded-md text-center px-4 py-2'>
+            {currentSeq ? (
+              <div className='text-center w-full max-w-6xl'>
+                {currentSeq.orderType === 'SERVICE PART' ? (
+                  <div
+                    className='font-black text-black tracking-widest leading-none flex flex-col items-center'
+                    style={{ fontSize: 'clamp(3rem, 14vw, 16rem)' }}
+                  >
+                    <span>SERVICE</span>
+                    <span>PART</span>
+                  </div>
+                ) : (
+                  <div
+                    className='font-black text-black tracking-widest'
+                    style={{
+                      fontSize: 'clamp(8rem, 25vw, 25rem)',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {currentProcessLabel}
+                  </div>
+                )}
               </div>
-              <div className='text-sm sm:text-base'>
-                Scan a Barcode to Begin Processing
+            ) : (
+              <div className='bg-slate-50 rounded-xl p-4 sm:p-8 text-center text-slate-400 border-2 border-dashed border-slate-200 h-full flex flex-col justify-center w-full'>
+                <AlertCircle className='w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-4 text-slate-300' />
+                <div className='text-lg sm:text-xl font-medium mb-2'>
+                  No Active Man Bracket Process
+                </div>
+                <div className='text-sm sm:text-base'>
+                  Scan a Barcode to Begin Processing
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Stock Info Sidebar */}
+          <div className='w-56 sm:w-68 flex-shrink-0 bg-white rounded-lg border border-slate-200 flex flex-col overflow-hidden shadow-sm'>
+            <div className='bg-slate-800 text-white px-3 py-2 flex items-center justify-center h-12 flex-shrink-0'>
+              <span className='text-base sm:text-xl font-bold tracking-wider'>
+                BATTERY STOCK - ASSY
+              </span>
+            </div>
+
+            <div className='flex-1 flex flex-col justify-center gap-4 p-3 min-h-0'>
+              <div className='flex-1 bg-slate-50 border border-slate-200 p-4 rounded-xl text-center flex flex-col justify-center'>
+                <div className='text-base sm:text-2xl font-bold text-slate-600 tracking-wide mb-2'>
+                  STD STOCK
+                </div>
+                <div className='text-5xl sm:text-6xl lg:text-8xl font-black leading-none text-slate-900'>
+                  {stdStock}
+                </div>
+              </div>
+
+              <div className='flex-1 bg-blue-50 border border-blue-200 p-4 rounded-xl text-center flex flex-col justify-center'>
+                <div className='text-base sm:text-2xl font-bold text-blue-700 tracking-wide mb-2'>
+                  BUFFER STOCK
+                </div>
+                <div className='text-5xl sm:text-7xl lg:text-8xl font-black leading-none text-blue-700'>
+                  {actBufferStock}
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         <div className='flex-shrink-0 border-t border-slate-300 bg-slate-100 px-3 sm:px-4 py-3'>

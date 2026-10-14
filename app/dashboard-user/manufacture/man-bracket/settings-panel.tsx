@@ -11,8 +11,10 @@ interface SettingsPanelProps {
   showSettings: boolean
   interlockOn: boolean
   manualDestination: Destination
+  inputMode: 'usb' | 'serial'
   scanInputRef: React.RefObject<HTMLInputElement | null>
   setShowSettings: (value: boolean) => void
+  setInputMode: (value: 'usb' | 'serial') => void
   handleToggleInterlock: (password: string) => Promise<void>
   handleSetManualDestination: (dest: Destination) => void
 }
@@ -21,8 +23,10 @@ export function SettingsPanel({
   showSettings,
   interlockOn,
   manualDestination,
+  inputMode,
   scanInputRef,
   setShowSettings,
+  setInputMode,
   handleToggleInterlock,
   handleSetManualDestination,
 }: SettingsPanelProps): React.ReactElement {
@@ -157,6 +161,32 @@ export function SettingsPanel({
                   </p>
                 </div>
               )}
+
+              <div className='border-t border-slate-200 pt-6'>
+                <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-3'>
+                  Input Source
+                </p>
+                <div className='flex gap-2'>
+                  {['USB', 'SERIAL'].map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setInputMode(mode.toLowerCase() as 'usb' | 'serial')}
+                      className={`flex-1 py-4 rounded-xl font-black text-md transition-all ${
+                        inputMode === mode.toLowerCase()
+                          ? 'bg-blue-600 text-white shadow-lg scale-105'
+                          : 'bg-slate-100 text-slate-500 border-2 border-slate-300 hover:border-blue-400 hover:text-blue-600'
+                      }`}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+                <p className='text-xs text-slate-400 mt-2'>
+                  {inputMode === 'serial'
+                    ? 'Auto-receiving scan data from serial scanner via database.'
+                    : 'Scan barcode manually using USB scanner or keyboard.'}
+                </p>
+              </div>
             </div>
           </motion.div>
 

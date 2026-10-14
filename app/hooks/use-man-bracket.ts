@@ -62,27 +62,34 @@ interface ManBracketSocketPayload {
 interface UseManBracketResult {
   sequences: Sequence[]
   completedSeqs: Sequence[]
+  completedCounts: Record<OrderType, number>
   isLoading: boolean
   isSubmitting: boolean
   showCompletePopup: boolean
   showWarningPopup: boolean
+  showScanBlockPopup: boolean
   warningNotice: string | null
   scanBarcode: string
   interlockOn: boolean
   manualDestination: Destination
   autoDestination: Destination
   showSettings: boolean
+  inputMode: 'usb' | 'serial'
   scanInputRef: React.RefObject<HTMLInputElement | null>
   completedListRef: React.RefObject<HTMLDivElement | null>
   currentSeq: Sequence | null
   activeDestination: Destination
+  stdStock: number
+  actBufferStock: number
 
   setScanBarcode: (value: string) => void
   setInterlockOn: (value: boolean) => void
   setManualDestination: (value: Destination) => void
   setShowSettings: (value: boolean) => void
+  setInputMode: (value: 'usb' | 'serial') => void
 
   fetchCompletedSequences: () => Promise<void>
+  fetchStock: () => Promise<void>
   fetchAutoDestination: () => Promise<Destination | null>
   handleToggleInterlock: (password: string) => Promise<void>
   handleSetManualDestination: (dest: Destination) => void
@@ -95,10 +102,14 @@ export const useManBracket = (): UseManBracketResult => {
   const { connected } = useSocketStatus()
   const [sequences, setSequences] = useState<Sequence[]>([])
   const [completedSeqs, setCompletedSeqs] = useState<Sequence[]>([])
+  const [completedCounts, setCompletedCounts] = useState<
+    Record<OrderType, number>
+  >({ ASSY: 0, CKD: 0, 'SERVICE PART': 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [showCompletePopup, setShowCompletePopup] = useState(false)
   const [showWarningPopup, setShowWarningPopup] = useState(false)
   const [warningNotice, setWarningNotice] = useState<string | null>(null)
+  const [showScanBlockPopup, setShowScanBlockPopup] = useState(false)
   const [scanBarcode, setScanBarcode] = useState('')
   const [interlockOn, setInterlockOn] = useState<boolean>(
     () =>
@@ -113,20 +124,36 @@ export const useManBracket = (): UseManBracketResult => {
         : null) ?? 'ASSY',
   )
   const [autoDestination, setAutoDestination] = useState<Destination>('ASSY')
+  const [stdStock, setStdStock] = useState(0)
+  const [actBufferStock, setActBufferStock] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [inputMode, setInputMode] = useState<'usb' | 'serial'>(
+    () =>
+      (typeof window !== 'undefined'
+        ? (localStorage.getItem('man-bracket-input-mode') as 'usb' | 'serial')
+        : null) ?? 'usb',
+  )
 
   const scanInputRef = useRef<HTMLInputElement | null>(null)
   const completedListRef = useRef<HTMLDivElement | null>(null)
   const scanCounterRef = useRef(1)
+  const serialScanRef = useRef('')
+  const currentSeqRef = useRef<Sequence | null>(null)
+  const handleScanSubmitRef = useRef<((event: React.FormEvent<HTMLFormElement>) => Promise<void>) | null>(null)
+  const markCompletedRef = useRef<((source: 'ws' | 'api-fallback' | 'manual') => void) | null>(null)
   const completePopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
   const warningPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
+  const scanBlockPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
   const currentSeq = sequences.find((s) => s.status === 'in-progress') ?? null
+  currentSeqRef.current = currentSeq
   const activeDestination: Destination = interlockOn
     ? autoDestination
     : manualDestination
@@ -154,9 +181,8 @@ export const useManBracket = (): UseManBracketResult => {
   const fetchCompletedSequences = useCallback(async () => {
     try {
       logger.debug('Fetching completed sequences')
-      const records = await manBracketApi.getCompleted({
+      const { records, countsByDestination } = await manBracketApi.getCompleted({
         fvalue: 1,
-        limit: 100,
       })
 
       const mappedRecords: Sequence[] = records.map((record: any) => {
@@ -198,9 +224,28 @@ export const useManBracket = (): UseManBracketResult => {
       })
 
       setCompletedSeqs(mappedRecords)
+      setCompletedCounts(
+        countsByDestination.reduce(
+          (acc, item) => {
+            acc[normalizeDestination(item.destination)] = Number(item.count) || 0
+            return acc
+          },
+          { ASSY: 0, CKD: 0, 'SERVICE PART': 0 } as Record<OrderType, number>,
+        ),
+      )
       logger.info('Completed sequences loaded', { count: mappedRecords.length })
     } catch (error) {
       handleError(error, { operation: 'fetchCompletedSequences' })
+    }
+  }, [])
+
+  const fetchStock = useCallback(async () => {
+    try {
+      const { stdStock, bufferStock } = await manBracketApi.getStock()
+      setStdStock(stdStock)
+      setActBufferStock(bufferStock)
+    } catch (error) {
+      handleError(error, { operation: 'fetchStock' })
     }
   }, [])
 
@@ -263,6 +308,14 @@ export const useManBracket = (): UseManBracketResult => {
     }
   }, [])
 
+  const dismissScanBlockPopup = useCallback(() => {
+    setShowScanBlockPopup(false)
+    if (scanBlockPopupTimerRef.current) {
+      clearTimeout(scanBlockPopupTimerRef.current)
+      scanBlockPopupTimerRef.current = null
+    }
+  }, [])
+
   const markCurrentSeqCompleted = useCallback(
     (source: 'ws' | 'api-fallback' | 'manual') => {
       if (!currentSeq) return
@@ -285,6 +338,7 @@ export const useManBracket = (): UseManBracketResult => {
     },
     [currentSeq, fetchCompletedSequences, triggerCompletePopup],
   )
+  markCompletedRef.current = markCurrentSeqCompleted
 
   useEffect(() => {
     return () => {
@@ -295,23 +349,69 @@ export const useManBracket = (): UseManBracketResult => {
       if (warningPopupTimerRef.current) {
         clearTimeout(warningPopupTimerRef.current)
       }
+
+      if (scanBlockPopupTimerRef.current) {
+        clearTimeout(scanBlockPopupTimerRef.current)
+      }
     }
   }, [])
 
-  // Fetch completed sequences on mount
+  // Persist input mode
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined')
+        localStorage.setItem('man-bracket-input-mode', inputMode)
+    } catch {}
+  }, [inputMode])
+
+  // Reset form when input source changes
+  useEffect(() => {
+    setScanBarcode('')
+    setSequences([])
+    setShowWarningPopup(false)
+    setWarningNotice(null)
+  }, [inputMode])
+
+  // Fetch completed sequences + stock on mount
   useEffect(() => {
     fetchCompletedSequences()
-  }, [fetchCompletedSequences])
+    fetchStock()
+  }, [fetchCompletedSequences, fetchStock])
+
+  // Realtime stock updates from TB_R_ANDON_GLOBAL
+  useEffect(() => {
+    const socket = getSocket()
+
+    const handleStockUpdate = (payload: {
+      stdStock?: number
+      bufferStock?: number
+    }) => {
+      if (typeof payload?.stdStock === 'number') {
+        setStdStock(payload.stdStock)
+      }
+      if (typeof payload?.bufferStock === 'number') {
+        setActBufferStock(payload.bufferStock)
+      }
+    }
+
+    socket.on('man-bracket:stock', handleStockUpdate)
+
+    return () => {
+      socket.off('man-bracket:stock', handleStockUpdate)
+    }
+  }, [])
 
   // Auto scroll + focus
   useEffect(() => {
     if (!isLoading) {
-      scanInputRef.current?.focus()
+      if (inputMode !== 'serial') {
+        scanInputRef.current?.focus()
+      }
       completedListRef.current?.scrollTo({
         top: completedListRef.current.scrollHeight,
       })
     }
-  }, [isLoading])
+  }, [isLoading, inputMode])
 
   // Auto scroll completed list when items added
   useEffect(() => {
@@ -376,14 +476,20 @@ export const useManBracket = (): UseManBracketResult => {
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
 
-      const barcode = scanBarcode.trim().toUpperCase()
+      const barcode = (scanBarcode || serialScanRef.current).trim().toUpperCase()
       if (!barcode) {
         scanInputRef.current?.focus()
         return
       }
 
       if (currentSeq) {
-        alert('Complete the current process before scanning a new label.')
+        setShowScanBlockPopup(true)
+        if (scanBlockPopupTimerRef.current) {
+          clearTimeout(scanBlockPopupTimerRef.current)
+        }
+        scanBlockPopupTimerRef.current = setTimeout(() => {
+          dismissScanBlockPopup()
+        }, 3000)
         scanInputRef.current?.focus()
         return
       }
@@ -478,6 +584,7 @@ export const useManBracket = (): UseManBracketResult => {
         })
 
         scanCounterRef.current += 1
+        serialScanRef.current = '' // clear ref
         setScanBarcode(barcode)
         scanInputRef.current?.focus()
 
@@ -497,6 +604,7 @@ export const useManBracket = (): UseManBracketResult => {
       resolveDestinationFromBarcode,
     ],
   )
+  handleScanSubmitRef.current = handleScanSubmit
 
   const handleResetProcess = useCallback(async () => {
     if (!currentSeq?.recordId) {
@@ -552,15 +660,16 @@ export const useManBracket = (): UseManBracketResult => {
     subscribeRoom('man-bracket')
 
     const handleManBracketUpdate = (payload: ManBracketSocketPayload) => {
-      if (!interlockOn || !currentSeq?.recordId) return
+      const seq = currentSeqRef.current
+      if (!interlockOn || !seq?.recordId) return
 
       const currentRecord = payload.records?.find(
-        (record) => Number(record.FID) === Number(currentSeq.recordId),
+        (record) => Number(record.FID) === Number(seq.recordId),
       )
 
       if (!currentRecord || Number(currentRecord.FVALUE) !== 1) return
 
-      markCurrentSeqCompleted('ws')
+      markCompletedRef.current?.('ws')
     }
 
     socket.on('man-bracket:update', handleManBracketUpdate)
@@ -569,7 +678,7 @@ export const useManBracket = (): UseManBracketResult => {
       socket.off('man-bracket:update', handleManBracketUpdate)
       unsubscribeRoom('man-bracket')
     }
-  }, [interlockOn, currentSeq, markCurrentSeqCompleted])
+  }, [interlockOn])
 
   useEffect(() => {
     if (connected || !interlockOn || !currentSeq?.recordId) return
@@ -577,17 +686,19 @@ export const useManBracket = (): UseManBracketResult => {
     let cancelled = false
 
     const syncActiveRecord = async () => {
+      const seq = currentSeqRef.current
+      if (!seq?.recordId) return
       try {
-        const record = await manBracketApi.getRecord(currentSeq.recordId!)
+        const record = await manBracketApi.getRecord(seq.recordId)
         if (cancelled || !record) return
 
         if (Number(record.FVALUE) === 1) {
-          markCurrentSeqCompleted('api-fallback')
+          markCompletedRef.current?.('api-fallback')
         }
       } catch (error) {
         if (!cancelled) {
           logger.debug('Fallback sync failed', {
-            recordId: currentSeq.recordId,
+            recordId: seq.recordId,
           })
         }
       }
@@ -602,30 +713,64 @@ export const useManBracket = (): UseManBracketResult => {
     }
   }, [connected, interlockOn, currentSeq?.recordId, markCurrentSeqCompleted])
 
+  useEffect(() => {
+    if (inputMode !== 'serial') return
+
+    const socket = getSocket()
+
+    const handleSerialScan = (payload: { barcode: string }) => {
+      if (!payload?.barcode) return
+      logger.info('Serial scan received', { barcode: payload.barcode })
+
+      // Write to ref so handleScanSubmit can read it (avoids stale closure)
+      serialScanRef.current = payload.barcode.toUpperCase()
+      const mockEvent = {
+        preventDefault: () => {},
+      } as React.FormEvent<HTMLFormElement>
+      setScanBarcode(payload.barcode.toUpperCase())
+      handleScanSubmitRef.current?.(mockEvent).catch((error) => {
+        logger.error('Auto-submit from serial scan failed', error)
+      })
+    }
+
+    socket.on('man-bracket:serial-scan', handleSerialScan)
+
+    return () => {
+      socket.off('man-bracket:serial-scan', handleSerialScan)
+    }
+  }, [inputMode])
+
   return {
     sequences,
     completedSeqs,
+    completedCounts,
     isLoading,
     isSubmitting,
     showCompletePopup,
     showWarningPopup,
+    showScanBlockPopup,
     scanBarcode,
     warningNotice,
     interlockOn,
     manualDestination,
     autoDestination,
     showSettings,
+    inputMode,
     scanInputRef,
     completedListRef,
     currentSeq,
     activeDestination,
+    stdStock,
+    actBufferStock,
 
     setScanBarcode,
     setInterlockOn,
     setManualDestination,
     setShowSettings,
+    setInputMode,
 
     fetchCompletedSequences,
+    fetchStock,
     fetchAutoDestination,
     handleToggleInterlock,
     handleSetManualDestination,

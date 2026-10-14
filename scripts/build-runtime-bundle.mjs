@@ -38,6 +38,21 @@ function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true })
 }
 
+function removeSync(dirPath) {
+  const maxRetries = 3
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      fs.rmSync(dirPath, { recursive: true, force: true })
+      return
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+      console.log(`  ⚠️  Retry ${attempt}/${maxRetries} to remove ${path.basename(dirPath)}...`)
+      const start = Date.now()
+      while (Date.now() - start < 2000) {}
+    }
+  }
+}
+
 function copyRecursive(src, dest) {
   if (!fs.existsSync(src)) return
 
@@ -295,7 +310,7 @@ try {
 
   console.log('\n🧹 Step 2: Preparing runtime folder...')
   if (fs.existsSync(runtimeDir)) {
-    fs.rmSync(runtimeDir, { recursive: true, force: true })
+    removeSync(runtimeDir)
   }
   ensureDir(runtimeDir)
 

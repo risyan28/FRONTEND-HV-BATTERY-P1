@@ -39,13 +39,13 @@ export function CurrentlySequences({ data }: ProcessingSectionProps) {
   const headers = [
     'NO SEQ',
     'TYPE BATTERY',
-    'KO SEQ',
+    'K0 SEQ',
     'NO BODY',
     'BARCODE',
     'TIME PRINT',
     'DATA FROM',
   ]
-  const mobileHeaders = ['SEQ', 'TYPE', 'KO', 'BODY', 'BARCODE', 'TIME', 'FROM']
+  const mobileHeaders = ['SEQ', 'TYPE', 'K0', 'BODY', 'BARCODE', 'TIME', 'FROM']
 
   // Lebar kolom dalam persen
   const columnWidths = ['10%', '10%', '10%', '10%', '25%', '25%', '10%']
